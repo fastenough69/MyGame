@@ -19,7 +19,6 @@ bool Render::ProgramShader::createShader(const std::string& src, const GLenum sh
 	return true;
 }
 
-
 Render::ProgramShader::ProgramShader(const std::string& ver_shader, const std::string& fr_shader)
 {
 	GLuint vsID = 0, frID = 0;
@@ -94,5 +93,3 @@ Render::ProgramShader& Render::ProgramShader::operator=(ProgramShader&& right) n
 	right.is_Compiled = false;
 	return *this;
 }
-
-

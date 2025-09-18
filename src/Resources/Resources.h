@@ -11,20 +11,23 @@ namespace Render {
 
 
 class ResourceManager {
-	typedef std::map<std::string, std::shared_ptr<Render::ProgramShader>> shaderProgMap;
+	using shaderProgMap = std::map<std::string, std::shared_ptr<Render::ProgramShader>>;
 
 	shaderProgMap sh_map;
 	std::string e_path;
-public:
+	static ResourceManager* instance;
 	ResourceManager(const std::string& pathExeFile);
+	std::string getFileStr(const std::string filePath) const;
+public:
+	static ResourceManager* getInstance(const std::string& pathExFile);
 	~ResourceManager() = default;
 	ResourceManager(const ResourceManager&) = delete;
 	ResourceManager& operator=(const ResourceManager&) = delete;
 	ResourceManager(ResourceManager&&) = delete;
 	ResourceManager& operator=(ResourceManager&&) = delete;
 
-	std::shared_ptr<Render::ProgramShader> loadShader(const std::string& shaderName, 
+	std::shared_ptr<Render::ProgramShader> loadShaderPr(const std::string& shaderName, 
 														const std::string& vertexPath, 
 														const std::string& fragmentPath);
-	std::shared_ptr<Render::ProgramShader> getShader(const std::string& nameShader);
+	std::shared_ptr<Render::ProgramShader> getShaderPr(const std::string& nameShader);
 };

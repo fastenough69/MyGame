@@ -2,13 +2,14 @@ cmake_minimum_required(VERSION 4.1 FATAL_ERROR)
 
 set(PROJECT_NAME MyGame)
 project(${PROJECT_NAME})
-set(CMAKE_C_COMPILER "C:/MinGW/bin/gcc.exe") 
-set(CMAKE_CXX_COMPILER "C:/MinGW/bin/g++.exe")
 
 add_executable(${PROJECT_NAME}
 	src/main.cpp
 	src/Render/Shaders.cpp
 	src/Render/Shaders.h
+	src/Render/Texture2D.cpp
+	src/Render/Texture2D.h
+	src/Resources/stb_image.h
 	src/Resources/Resources.cpp
 	src/Resources/Resources.h
 )

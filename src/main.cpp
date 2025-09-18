@@ -74,6 +74,7 @@ int main(int argc, char** argv)
         {
             std::cerr << "Cant create proram shaders" << std::endl;
         }
+        mn->loadTexture("Default texture", "res/textures/Brick_02-128x128.png");
 
         GLuint points_vbo = 0;
         glGenBuffers(1, &points_vbo);

@@ -7,13 +7,16 @@
 
 namespace Render {
 	class ProgramShader;
+	class Texture2D;
 }
 
 
 class ResourceManager {
 	using shaderProgMap = std::map<std::string, std::shared_ptr<Render::ProgramShader>>;
+	using textureMap = std::map<std::string, std::shared_ptr<Render::Texture2D>>;
 
 	shaderProgMap sh_map;
+	textureMap t_map;
 	std::string e_path;
 	static ResourceManager* instance;
 	ResourceManager(const std::string& pathExeFile);
@@ -30,4 +33,6 @@ public:
 														const std::string& vertexPath, 
 														const std::string& fragmentPath);
 	std::shared_ptr<Render::ProgramShader> getShaderPr(const std::string& nameShader);
+	std::shared_ptr<Render::Texture2D> loadTexture(const std::string& texName, const std::string& texPath);
+	std::shared_ptr<Render::Texture2D> getTexture(const std::string& texName);
 };

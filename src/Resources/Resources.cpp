@@ -1,5 +1,9 @@
 #include "Resources.h"
 #include "../Render/Shaders.h"
+#include "../Render/Texture2D.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#define  STBI_ONLY_PNG
 
 #include <fstream>
 #include <sstream>
@@ -70,4 +74,32 @@ std::shared_ptr<Render::ProgramShader> ResourceManager::getShaderPr(const std::s
 		return nullptr;
 	}
 	return sh_map[nameShader];
+}
+
+std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture(const std::string& texName, const std::string& texPath)
+{
+	int chanels = 0, widht = 0, height = 0;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data =  stbi_load(std::string(e_path + "/" + texPath).c_str(), &widht, &height, &chanels, 0);
+	if (!data)
+	{
+		std::cerr << "Cant load image" << std::endl;
+		return  nullptr;
+	}
+
+	auto currTexture = std::make_shared<Render::Texture2D>(widht, height, data, chanels, GL_NEAREST);
+	t_map.emplace(texName, currTexture);
+	
+	stbi_image_free(data);
+	return currTexture;
+}
+
+std::shared_ptr<Render::Texture2D> ResourceManager::getTexture(const std::string& texName)
+{
+	if (!t_map.count(texName))
+	{
+		std::cerr << "Incorrect texture name" << std::endl;
+		return nullptr;
+	}
+	return t_map[texName];
 }

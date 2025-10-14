@@ -41,6 +41,11 @@ ResourceManager* ResourceManager::getInstance(const std::string& pathExFile)
 	return ResourceManager::instance;
 }
 
+ResourceManager::~ResourceManager()
+{
+	delete instance;
+}
+
 std::shared_ptr<Render::ProgramShader> ResourceManager::loadShaderPr(const std::string& shaderName, 
 																	const std::string& vertexPath, 
 																	const std::string& fragmentPath)

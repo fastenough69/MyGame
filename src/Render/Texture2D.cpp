@@ -21,6 +21,7 @@ namespace Render {
 			break;
 		}
 		glGenTextures(1, &t_id);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, t_id);
 		glTexImage2D(GL_TEXTURE_2D, 0, t_mode, width, height, 0, t_mode, GL_UNSIGNED_BYTE, data);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
@@ -30,16 +31,6 @@ namespace Render {
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-
-	/*void Texture2D::swap(Texture2D obj)
-	{
-		std::swap(this->t_id, (unsigned int)obj.t_id);
-		std::swap(this->width, obj.width);
-		std::swap(this->height, obj.height);
-		GLenum temp = obj.t_mode;
-		obj.t_mode = this->t_mode;
-		this->t_mode = temp;
-	}*/
 
 	Texture2D::Texture2D(Texture2D&& right) noexcept
 	{
@@ -84,6 +75,6 @@ namespace Render {
 
 	void Texture2D::bind() const
 	{
-
+		glBindTexture(GL_TEXTURE_2D, t_id);
 	}
 }

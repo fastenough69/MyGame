@@ -5,6 +5,7 @@
 
 #include "Render/Shaders.h"
 #include "Resources/Resources.h"
+#include "Render/Texture2D.h"
 
 int window_SizeX = 640;
 int window_SizeY = 480;
@@ -19,6 +20,12 @@ float color[] = {
     1.0f, 0.5f, 0.0f,
     0.5f, 1.0f, 0.0f,
     0.0f, 0.0f, 1.0f
+};
+
+float tex_cord[] = {
+    1.0f, 1.0f,     
+    1.0f, 0.0f, 
+    0.0f, 0.0f,
 };
 
 static void EscKeyCallback(GLFWwindow* pt_w, int key, int scancode, int action, int mode)
@@ -74,7 +81,7 @@ int main(int argc, char** argv)
         {
             std::cerr << "Cant create proram shaders" << std::endl;
         }
-        mn->loadTexture("Default texture", "res/textures/Brick_02-128x128.png");
+        auto firstTex = mn->loadTexture("Default texture", "res/textures/Brick_02-128x128.png");
 
         GLuint points_vbo = 0;
         glGenBuffers(1, &points_vbo);
@@ -85,6 +92,11 @@ int main(int argc, char** argv)
         glGenBuffers(1, &colors_vbo);
         glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
+
+        GLuint texture_vbo = 0;
+        glGenBuffers(1, &texture_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, texture_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(tex_cord), tex_cord, GL_STATIC_DRAW);
 
         GLuint Vao = 0;
         glGenVertexArrays(1, &Vao);
@@ -98,6 +110,13 @@ int main(int argc, char** argv)
         glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, texture_vbo);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        shProgram->usage();
+        shProgram->setInt("tex", 0);
+
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(pt_window))
         {
@@ -106,6 +125,7 @@ int main(int argc, char** argv)
 
             shProgram->usage();
             glBindVertexArray(Vao);
+            firstTex->bind();
             glDrawArrays(GL_TRIANGLES, 0, 3);
 
             /* Swap front and back buffers */

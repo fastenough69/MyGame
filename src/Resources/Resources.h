@@ -23,7 +23,7 @@ class ResourceManager {
 	std::string getFileStr(const std::string filePath) const;
 public:
 	static ResourceManager* getInstance(const std::string& pathExFile);
-	~ResourceManager() = default;
+	~ResourceManager();
 	ResourceManager(const ResourceManager&) = delete;
 	ResourceManager& operator=(const ResourceManager&) = delete;
 	ResourceManager(ResourceManager&&) = delete;

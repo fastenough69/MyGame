@@ -79,6 +79,11 @@ void Render::ProgramShader::setInt(const std::string& name, const GLint value)
 	glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
+GLuint Render::ProgramShader::get_id() const
+{
+	return m_id;
+}
+
 Render::ProgramShader::ProgramShader(ProgramShader&& right) noexcept
 {
 	glDeleteProgram(m_id);

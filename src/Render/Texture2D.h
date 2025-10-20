@@ -10,7 +10,6 @@ namespace Render {
 		unsigned int width{ 0 };
 		unsigned int height{ 0 };
 		GLenum t_mode{ 0 };
-		//void swap(Texture2D obj);
 	public:
 		Texture2D(const GLuint width, 
 					const GLuint height, 

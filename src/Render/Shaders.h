@@ -18,6 +18,7 @@ namespace Render{
 		bool get_compile() const { return is_Compiled; };
 		bool usage() const;
 		void setInt(const std::string& name, const GLint value);
+		GLuint get_id() const;
 
 		ProgramShader() = delete;
 		ProgramShader(ProgramShader&) = delete;

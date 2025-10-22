@@ -12,6 +12,14 @@ add_executable(${PROJECT_NAME}
 	src/Resources/stb_image.h
 	src/Resources/Resources.cpp
 	src/Resources/Resources.h
+	src/Render/VertexBuffArr.cpp
+	src/Render/VertexBuffArr.h
+	src/Render/VertexArr.cpp
+	src/Render/VertexArr.h
+	src/Render/IndexBuff.cpp
+	src/Render/IndexBuff.h
+	src/Render/SpriteAnim.cpp
+	src/Render/SpriteAnim.h
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

@@ -1,25 +1,25 @@
 #include "SpriteAnim.h"
+#include <cmath>
 
-Sprite::SpriteAnim::SpriteAnim(float speed, unsigned int frames): animSpeed{speed}, countFrames(frames)
+Sprite::SpriteAnim::SpriteAnim(float speed, float frames): animSpeed{speed}, countFrames(frames)
 {
-
 }
 
 void Sprite::SpriteAnim::update(float curr_time)
 {
-	if (curr_time >= 1.0f / animSpeed)
+	if (curr_time - lastUpTime >= 1.0f / animSpeed)
 	{
-		currFrame = (currFrame + 1) % countFrames;
+		currFrame = fmod((currFrame + 1), countFrames);
 		lastUpTime = curr_time;
 	}
 }
 
-unsigned int Sprite::SpriteAnim::get_curr_frame() const
+float Sprite::SpriteAnim::get_curr_frame() const
 {
 	return currFrame;
 }
 
-void Sprite::SpriteAnim::set_curr_frame(unsigned int frame)
+void Sprite::SpriteAnim::set_curr_frame(float frame)
 {
 	currFrame = frame;
 }

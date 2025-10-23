@@ -20,6 +20,8 @@ add_executable(${PROJECT_NAME}
 	src/Render/IndexBuff.h
 	src/Render/SpriteAnim.cpp
 	src/Render/SpriteAnim.h
+	src/Objects/Object.cpp
+	src/Objects/Object.h
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

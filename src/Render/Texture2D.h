@@ -24,6 +24,7 @@ namespace Render {
 		Texture2D(Texture2D&& right) noexcept;
 		Texture2D& operator=(Texture2D&& right) noexcept;
 		void bind() const;
+		void unbind();
 	};
 
 }

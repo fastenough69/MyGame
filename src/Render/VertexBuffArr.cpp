@@ -34,7 +34,7 @@ void Render::VertexBuffArr::init(const void* data, unsigned int size)
 {
 	glGenBuffers(1, &id);
 	glBindBuffer(GL_ARRAY_BUFFER, id);
-	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 }
 
 void Render::VertexBuffArr::update_data(const void* data, unsigned int size)

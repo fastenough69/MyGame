@@ -77,4 +77,9 @@ namespace Render {
 	{
 		glBindTexture(GL_TEXTURE_2D, t_id);
 	}
+
+	void Texture2D::unbind()
+	{
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 }

@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     std::cout << "Width: " << window_SizeX << std::endl;
     std::cout << "Height: " << window_SizeY << std::endl;
 
-    GLFWwindow* pt_window = glfwCreateWindow(window_SizeX, window_SizeY, "Hello World", nullptr, nullptr);
+    GLFWwindow* pt_window = glfwCreateWindow(window_SizeX, window_SizeY, "Hello World", glfwGetPrimaryMonitor(), nullptr);
     if (!pt_window)
     {
         glfwTerminate();

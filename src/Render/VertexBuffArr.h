@@ -13,7 +13,6 @@ namespace Render
 		VertexBuffArr& operator=(const VertexBuffArr&) = delete;
 		VertexBuffArr(VertexBuffArr&& right) noexcept;
 		VertexBuffArr& operator=(VertexBuffArr&& right) noexcept;
-
 		void init(const void* data, unsigned int size);
 		void update_data(const void* data, unsigned int size);
 		void bind() const;

@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
 
 using state_map = std::map<std::string, std::pair<std::shared_ptr<Render::Texture2D>, std::shared_ptr<Sprite::SpriteAnim>>>;
 
@@ -20,8 +21,11 @@ namespace Objects {
 		Sprite::SpriteSize size{};
 		state_map table_state{};
 		glm::vec2 position{};
+		glm::vec2 oldPos{};
 		glm::vec2 velocity{};
 		float speed{ 200.0f };
+		bool direction = true;
+		bool is_attack = false;
 	public:
 		Object() = default;
 		~Object() = default;
@@ -35,6 +39,8 @@ namespace Objects {
 		void bind_state(const std::string name, std::vector<float>& ver);
 		void move_object(int key, int action);
 		void update(float deltaTime, float widht, float hight);
-		glm::vec2 get_position() const { return position; };
+		glm::vec2 get_position() const { return position; }
+		bool get_attack_flag() const { return is_attack; }
+		void set_attack_flag(bool flg) { is_attack = flg; }
 	};
 }

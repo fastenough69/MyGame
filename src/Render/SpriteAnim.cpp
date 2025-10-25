@@ -1,8 +1,12 @@
 #include "SpriteAnim.h"
-#include <cmath>
 
-Sprite::SpriteAnim::SpriteAnim(float speed, float frames): animSpeed{speed}, countFrames(frames)
+Sprite::SpriteAnim::SpriteAnim(float speed, float frames): animSpeed{speed}
 {
+	if (frames < 1.0f)
+	{
+		std::cerr << "frames not can smalest unit" << std::endl;
+	}
+	countFrames = frames;
 }
 
 void Sprite::SpriteAnim::update(float curr_time)

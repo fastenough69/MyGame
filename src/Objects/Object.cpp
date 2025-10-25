@@ -1,8 +1,7 @@
 ﻿#include "Object.h"
-#include <GLFW/glfw3.h>
 
 Objects::Object::Object(std::shared_ptr<Render::ProgramShader> pr, Sprite::SpriteSize& sz, glm::vec2& pos, glm::vec2& vel, float sp) : 
-	shProgram{pr}, size{sz}, position{pos}, velocity{vel}, speed{sp}
+	shProgram{pr}, size{sz}, position{pos}, oldPos{pos}, velocity{vel}, speed{sp}
 {
 }
 
@@ -11,7 +10,14 @@ Objects::Object::Object(Object&& right) noexcept
 	if (this == &right) return;
 	shProgram = right.shProgram;
 	table_state = right.table_state;
+	size = right.size;
+	position = right.position;
+	oldPos = oldPos;
+	velocity = right.velocity;
+	speed = right.speed;
+	direction = direction;
 	right.shProgram = nullptr;
+	right.table_state.clear();
 }
 
 Objects::Object& Objects::Object::operator=(Object&& right) noexcept
@@ -19,7 +25,14 @@ Objects::Object& Objects::Object::operator=(Object&& right) noexcept
 	if (this == &right) return *this;
 	shProgram = right.shProgram;
 	table_state = right.table_state;
+	size = right.size;
+	position = right.position;
+	oldPos = oldPos;
+	velocity = right.velocity;
+	speed = right.speed;
+	direction = direction;
 	right.shProgram = nullptr;
+	right.table_state.clear();
 	return *this;
 }
 
@@ -48,10 +61,18 @@ void Objects::Object::bind_state(const std::string name, std::vector<float>& ver
 	float uOffset = spr->get_curr_frame() * frameWidthUV;
 
 	if (ver.size() >= 20) {
-		ver[3] = uOffset;                 
-		ver[8] = uOffset + frameWidthUV;    
-		ver[13] = uOffset + frameWidthUV;    
-		ver[18] = uOffset;              
+		ver[3] = uOffset;
+		ver[8] = uOffset + frameWidthUV;
+		ver[13] = uOffset + frameWidthUV;
+		ver[18] = uOffset;
+
+		if(!direction)
+		{
+			ver[3] = 1.0f - ver[3];
+			ver[8] = 1.0f - ver[8];
+			ver[13] = 1.0f - ver[13];
+			ver[18] = 1.0f - ver[18];
+		}         
 	}
 }
 
@@ -73,12 +94,33 @@ void Objects::Object::move_object(int key, int action)
 		case GLFW_KEY_D: if (velocity.x > 0) velocity.x = 0; break;
 		}
 	}
+	if (key == GLFW_KEY_L)
+	{
+		if (action == GLFW_PRESS)
+		{
+			is_attack = true;
+		}
+		else
+		{
+			is_attack = false;
+		}
+	}
 }
 
 void Objects::Object::update(float deltaTime, float widht, float height)
 {
 	position += velocity * deltaTime;
-	if (position.x >= widht - size.width + 200.0f) position.x = widht - size.width + 200.0f;
+	if (oldPos.x > position.x)
+	{
+		direction = false;
+	}
+	else if (oldPos.x < position.x)
+	{
+		direction = true;
+	}
+	oldPos = position;
+
+	if (position.x >= widht - size.width) position.x = widht - size.width;
 	if (position.x <= 0.0f) position.x = 0.0f;
 	if (position.y >= height - size.height) position.y = height - size.height;
 	if (position.y <= 0.0f) position.y = 0.0f;

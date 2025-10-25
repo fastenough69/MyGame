@@ -1,6 +1,8 @@
 #pragma once
 
 #include <glad/glad.h>
+#include <cmath>
+#include <iostream>
 
 namespace Sprite {
 	struct SpriteSize {
@@ -17,8 +19,10 @@ namespace Sprite {
 		SpriteAnim() = default;
 		~SpriteAnim() = default;
 		SpriteAnim(float speed, float frames);
-
-
+		SpriteAnim(const SpriteAnim&) = delete;
+		SpriteAnim& operator=(const SpriteAnim&) = delete;
+		SpriteAnim(SpriteAnim&& right) noexcept;
+		SpriteAnim& operator=(SpriteAnim&& right) noexcept;
 		void update(float curr_time);
 		float get_curr_frame() const;
 		unsigned int get_count_fr() const { return countFrames; };

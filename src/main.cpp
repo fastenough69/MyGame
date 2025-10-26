@@ -82,8 +82,8 @@ int main(int argc, char** argv)
 
     {
         ResourceManager* mn = ResourceManager::getInstance(argv[0]);
-        auto shProgramHero = mn->loadShaderPr("DefaultShaders", "res/shaders/vShader.txt", "res/shaders/fShader.txt");
-        //auto shProgramBg = mn->loadShaderPr("ShaderBg", "res/shaders/vShader.txt", "res/shaders/fShader.txt");
+        auto shProgramHero = mn->loadShaderPr("DefaultShaders", "res/shaders/ObjectsShaders/vShader.txt", "res/shaders/ObjectsShaders/fShader.txt");
+        auto shProgramBg = mn->loadShaderPr("ShaderBg", "res/shaders/BgShaders/vShader.txt", "res/shaders/BgShaders/fShader.txt");
         if (!shProgramHero)
         {
             std::cerr << "Cant create program shaders" << std::endl;
@@ -92,13 +92,13 @@ int main(int argc, char** argv)
         auto idle_tex = mn->loadTexture("Idle_tex", "res/textures/IDLE.png");
         auto attack_tex = mn->loadTexture("Attack_tex", "res/textures/ATTACK 1.png");
         
-        /*auto bg_tex = mn->loadTexture("Bg_tex", "res/textures/glacial_mountains_lightened.png");
+        auto bg_tex = mn->loadTexture("Bg_tex", "res/textures/glacial_mountains_lightened.png");
 
-        Sprite::SpriteSize szBg{ 0.0f, 0.0f, (float)window_SizeX, (float)window_SizeY };
+        Sprite::SpriteSize szBg{ -1.0f, -1.0f, (float)window_SizeX, (float)window_SizeY };
         Objects::Object backGr{ shProgramBg, szBg, glm::vec2(szBg.x, szBg.y), glm::vec2(0.0f, 0.0f) };
 
-        auto bg_spr = std::make_shared<Sprite::SpriteAnim>(0.0f, 1.0f);
-        backGr.add_state("default", bg_tex, bg_spr);*/
+        auto bg_spr = std::make_shared<Sprite::SpriteAnim>(1.0f, 1.0f);
+        backGr.add_state("default", bg_tex, bg_spr);
 
         Sprite::SpriteSize sp{ (float)window_SizeX / 2.0f, (float)window_SizeY / 2.0f, 200, 200};
         Objects::Object main_hero(shProgramHero, sp, glm::vec2(sp.x, sp.y), glm::vec2(0.0f, 0.0f), 300.0f);
@@ -118,10 +118,13 @@ int main(int argc, char** argv)
                                     sp.width, sp.height, 0.0f,    1.0f, 1.0f,
                                     0.0f, sp.height, 0.0f,          0.0f, 1.0f };
 
-        /*std::vector<float> verBg = { 0.0f, 0.0f, 0.0f,              0.0f, 0.0f,
-                                   szBg.width, 0.0f, 0.0f,         1.0f, 0.0f,
-                                   szBg.width, szBg.height, 0.0f,    1.0f, 1.0f,
-                                   0.0f, szBg.height, 0.0f,          0.0f, 1.0f };*/
+        // Попробуйте такие координаты для фона:
+        std::vector<float> verBg = {
+                                    -1.0f, -1.0f, 0.0f,     0.0f, 0.0f,  // bottom-left
+                                     1.0f, -1.0f, 0.0f,     1.0f, 0.0f,  // bottom-right  
+                                     1.0f,  1.0f, 0.0f,     1.0f, 1.0f,  // top-right
+                                    -1.0f,  1.0f, 0.0f,     0.0f, 1.0f   // top-left
+                                };
 
         unsigned int indices[] = {0, 1, 2,
                                   2, 3, 0};
@@ -138,6 +141,19 @@ int main(int argc, char** argv)
         shProgramHero->usage();
         shProgramHero->setInt("tex", 0);
 
+        Render::VertexBuffArr points_bg;
+        Render::IndexBuff emoBg;
+        Render::VertexArr vaoBg;
+        points_bg.init(verBg.data(), verBg.size() * sizeof(float));
+        vaoBg.init();
+        vaoBg.add_buffer(points_bg, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+        vaoBg.add_buffer(points_bg, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        emoBg.init(indices, sizeof(indices));
+        vaoBg.unbind();
+        shProgramBg->usage();
+        shProgramBg->setInt("tex", 0);
+
+        shProgramHero->usage();
         GLuint modelLoc = glGetUniformLocation(shProgramHero->get_id(), "model");
         GLuint projLoc = glGetUniformLocation(shProgramHero->get_id(), "projection");
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
@@ -153,6 +169,10 @@ int main(int argc, char** argv)
             float currTime = glfwGetTime();
             float deltaTime = currTime - lastTime;
             lastTime = currTime;
+
+            backGr.bind_state("default", verBg);
+            vaoBg.bind();
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
             main_hero.update(deltaTime, window_SizeX, window_SizeY);
             glm::vec2 pos_hero = main_hero.get_position();
@@ -186,9 +206,10 @@ int main(int argc, char** argv)
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
             points_vbo.update_data(ver.data(), ver.size() * sizeof(float));
 
+            shProgramHero->usage();
             vaoHero.bind();
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+            
             /* Swap front and back buffers */
             glfwSwapBuffers(pt_window);
 

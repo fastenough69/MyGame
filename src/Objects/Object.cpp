@@ -1,9 +1,8 @@
 ﻿#include "Object.h"
 
 Objects::Object::Object(std::shared_ptr<Render::ProgramShader> pr, Sprite::SpriteSize& sz, glm::vec2& pos, glm::vec2& vel, float sp) : 
-	shProgram{pr}, size{sz}, position{pos}, oldPos{pos}, velocity{vel}, speed{sp}
-{
-}
+	Obj(pr, sz, pos, vel, sp)
+	{	}
 
 Objects::Object::Object(Object&& right) noexcept
 {

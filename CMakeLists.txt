@@ -22,6 +22,10 @@ add_executable(${PROJECT_NAME}
 	src/Render/SpriteAnim.h
 	src/Objects/Object.cpp
 	src/Objects/Object.h
+	src/Objects/Persons.cpp
+	src/Objects/Persons.h
+	src/Camera/Camera2D.cpp
+	src/Camera/Camera2D.h
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

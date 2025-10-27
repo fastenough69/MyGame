@@ -32,3 +32,9 @@ void Sprite::SpriteAnim::set_speed(float speed)
 {
 	animSpeed = speed;
 }
+
+void Sprite::SpriteAnim::reset()
+{
+    currFrame = 0.0f;
+    lastUpTime = 0.0f;
+}

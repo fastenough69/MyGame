@@ -13,6 +13,7 @@ class Camera2D
 
   public:
     Camera2D(float width, float height);
+    Camera2D() = default;
     ~Camera2D() = default;
 
     void folow_target(glm::vec2 &target, float widht, float height);

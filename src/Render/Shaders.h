@@ -3,6 +3,9 @@
 #include <string>
 #include <glad/glad.h>
 #include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 namespace Render{
@@ -18,6 +21,7 @@ namespace Render{
 		bool get_compile() const { return is_Compiled; };
 		bool usage() const;
 		void setInt(const std::string& name, const GLint value);
+        void setMat4(const std::string &name, glm::mat4 matrix);
 		GLuint get_id() const;
 
 		ProgramShader() = delete;

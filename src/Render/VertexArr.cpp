@@ -5,6 +5,27 @@ Render::VertexArr::~VertexArr()
 	glDeleteVertexArrays(1, &id);
 }
 
+Render::VertexArr::VertexArr(VertexArr &&right) noexcept
+{
+    if (this == &right)
+        return;
+    id = right.id;
+    index_buffers = right.index_buffers;
+    right.id = 0;
+    right.index_buffers = 0;
+}
+
+Render::VertexArr &Render::VertexArr::operator=(VertexArr &&right) noexcept
+{
+    if (this == &right)
+        return *this;
+    id = right.id;
+    index_buffers = right.index_buffers;
+    right.id = 0;
+    right.index_buffers = 0;
+    return *this;
+}
+
 void Render::VertexArr::init()
 {
 	glGenVertexArrays(1, &id);

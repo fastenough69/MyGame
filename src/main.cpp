@@ -7,7 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "Camera/Camera2D.h"
 #include "Objects/Object.h"
+#include "Objects/Persons.h"
 #include "Render/IndexBuff.h"
 #include "Render/Shaders.h"
 #include "Render/SpriteAnim.h"
@@ -15,10 +17,9 @@
 #include "Render/VertexArr.h"
 #include "Render/VertexBuffArr.h"
 #include "Resources/Resources.h"
-#include "Camera/Camera2D.h"
 
-int window_SizeX = 1600;
-int window_SizeY = 900;
+float window_SizeX = 1600;
+float window_SizeY = 900;
 
 static void WindowSizeCallback(GLFWwindow *pt_w, int widht, int heigth)
 {
@@ -34,7 +35,7 @@ static void RightKeyCallback(GLFWwindow *pt_w, int key, int scancode, int action
         glfwSetWindowShouldClose(pt_w, GL_TRUE);
     }
 
-    Objects::Object *obj = static_cast<Objects::Object *>(glfwGetWindowUserPointer(pt_w));
+    Objects::MainHero *obj = static_cast<Objects::MainHero *>(glfwGetWindowUserPointer(pt_w));
     if (obj)
     {
         obj->move_object(key, action);
@@ -99,59 +100,70 @@ int main(int argc, char **argv)
         auto bg_tex = mn->loadTexture("Bg_tex", "res/textures/glacial_mountains_lightened.png");
 
         float worldWidth = 5000.0f;
-        float worldHeight = 5000.0f;
+        float worldHeight = (float)window_SizeY;
 
-        Sprite::SpriteSize szBg{-1.0f, -1.0f, (float)window_SizeX, (float)window_SizeY};
-        Objects::Object backGr{shProgramBg, szBg, glm::vec2(szBg.x, szBg.y), glm::vec2(0.0f, 0.0f)};
+        Sprite::SpriteSize szBg{0.0f, 0.0f, (float)(window_SizeX), (float)(window_SizeY)};
+        Objects::MainHero backGr{shProgramBg, szBg, glm::vec2(szBg.x, szBg.y), glm::vec2(0.0f, 0.0f)};
 
         auto bg_spr = std::make_shared<Sprite::SpriteAnim>(1.0f, 1.0f);
         backGr.add_state("default", bg_tex, bg_spr);
 
-        Sprite::SpriteSize sp{0.0f, 0.0f, 500, 500};
-        Objects::Object main_hero(shProgramHero, sp, glm::vec2(sp.x, sp.y), glm::vec2(0.0f, 0.0f), 600.0f);
-
-        glfwSetWindowUserPointer(pt_window, &main_hero);
-        glfwSetKeyCallback(pt_window, RightKeyCallback);
+        Sprite::SpriteSize sp{0.0f, 0.0f, 200, 200};
+        auto main_hero = std::make_shared<Objects::MainHero>(shProgramHero, sp, glm::vec2(sp.x, sp.y),
+                                                             glm::vec2(0.0f, 0.0f), 600.0f);
         auto spr_run = std::make_shared<Sprite::SpriteAnim>(14.0f, 16.0f);
         auto spr_idle = std::make_shared<Sprite::SpriteAnim>(10.0f, 10.0f);
         auto spr_attack = std::make_shared<Sprite::SpriteAnim>(20.0f, 7.0f);
 
-        main_hero.add_state(std::string("run_hero"), run_tex, spr_run);
-        main_hero.add_state(std::string("idle_hero"), idle_tex, spr_idle);
-        main_hero.add_state(std::string("attack_hero"), attack_tex, spr_attack);
+        main_hero->add_state(std::string("run_hero"), run_tex, spr_run);
+        main_hero->add_state(std::string("idle_hero"), idle_tex, spr_idle);
+        main_hero->add_state(std::string("attack_hero"), attack_tex, spr_attack);
 
-        std::vector<float> ver = {0.0f,     0.0f,      0.0f, 0.0f, 0.0f, sp.width, 0.0f,      0.0f, 1.0f, 0.0f,
-                                  sp.width, sp.height, 0.0f, 1.0f, 1.0f, 0.0f,     sp.height, 0.0f, 0.0f, 1.0f};
+        auto cam = std::make_shared<Camera::Camera2D>((float)window_SizeX, (float)window_SizeY);
+        Objects::GameObjMainHero hero{main_hero,
+                                      std::vector<float>{0.0f, 0.0f, 0.0f,      0.0f,     0.0f,      sp.width, 0.0f,
+                                                         0.0f, 1.0f, 0.0f,      sp.width, sp.height, 0.0f,     1.0f,
+                                                         1.0f, 0.0f, sp.height, 0.0f,     0.0f,      1.0f},
+                                      std::vector<unsigned int>{0, 1, 2, 2, 3, 0},
+                                      Render::VertexBuffArr{},
+                                      Render::IndexBuff{},
+                                      Render::VertexArr{}};
+        hero.init();
+
+        glfwSetWindowUserPointer(pt_window, main_hero.get());
+        glfwSetKeyCallback(pt_window, RightKeyCallback);
 
         // Попробуйте такие координаты для фона:k
-        std::vector<float> verBg = {
-            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // bottom-left
-            1.0f,  -1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
-            1.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right
-            -1.0f, 1.0f,  0.0f, 0.0f, 1.0f  // top-left
-        };
-
-        
-        //std::vector<float> verBg = {
-        //    0.0f,       0.0f,        0.0f, 0.0f, 0.0f, // левый-низ
-        //    worldWidth, 0.0f,        0.0f, 1.0f, 0.0f, // правый-низ
-        //    worldWidth, worldHeight, 0.0f, 1.0f, 1.0f, // правый-верх
-        //    0.0f,       worldHeight, 0.0f, 0.0f, 1.0f  // левый-верх
+        // std::vector<float> verBg = {
+        //    -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // bottom-left
+        //    1.0f,  -1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
+        //    1.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right
+        //    -1.0f, 1.0f,  0.0f, 0.0f, 1.0f  // top-left
         //};
 
-        unsigned int indices[] = {0, 1, 2, 2, 3, 0};
+       float bgRepeatCount = 4.0f; // сколько раз повторять текстуру
+        std::vector<float> verBg = {0.0f,
+                                    0.0f,
+                                    0.0f,
+                                    0.0f,
+                                    0.0f,
+                                    window_SizeX * bgRepeatCount,
+                                    0.0f,
+                                    0.0f,
+                                    bgRepeatCount,
+                                    0.0f,
+                                    window_SizeX * bgRepeatCount,
+                                    window_SizeY,
+                                    0.0f,
+                                    bgRepeatCount,
+                                    1.0f,
+                                    0.0f,
+                                    window_SizeY,
+                                    0.0f,
+                                    0.0f,
+                                    1.0f};
 
-        Render::VertexBuffArr points_vbo;
-        Render::IndexBuff emo;
-        Render::VertexArr vaoHero;
-        points_vbo.init(ver.data(), ver.size() * sizeof(float));
-        vaoHero.init();
-        vaoHero.add_buffer(points_vbo, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-        vaoHero.add_buffer(points_vbo, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-        emo.init(indices, sizeof(indices));
-        vaoHero.unbind();
-        shProgramHero->usage();
-        shProgramHero->setInt("tex", 0);
+        unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
         Render::VertexBuffArr points_bg;
         Render::IndexBuff emoBg;
@@ -165,21 +177,8 @@ int main(int argc, char **argv)
         shProgramBg->usage();
         shProgramBg->setInt("tex", 0);
 
-        shProgramHero->usage();
-        GLuint modelLoc = glGetUniformLocation(shProgramHero->get_id(), "model");
-        GLuint projLoc = glGetUniformLocation(shProgramHero->get_id(), "projection");
-        GLuint viewLoc = glGetUniformLocation(shProgramHero->get_id(), "view");
-
-        /*shProgramBg->usage();
-        GLuint projLocBg = glGetUniformLocation(shProgramBg->get_id(), "projection");
-        GLuint viewLocBg = glGetUniformLocation(shProgramBg->get_id(), "view");*/
-        //glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-        Camera::Camera2D cam((float)window_SizeX, (float)window_SizeY);
-
-        
-
         float lastTime = 0;
-        glm::vec2 diff_coord = main_hero.get_position();
+        glm::vec2 diff_coord = main_hero->get_position();
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(pt_window))
         {
@@ -190,47 +189,20 @@ int main(int argc, char **argv)
             float deltaTime = currTime - lastTime;
             lastTime = currTime;
 
-            main_hero.update(deltaTime, worldWidth, worldHeight);
-            glm::vec2 pos_hero = main_hero.get_position();
-            cam.folow_target(pos_hero, worldWidth, worldHeight);
+            cam->folow_target(hero.get_pos_obj(), worldWidth, worldHeight);
+            glm::mat4 proj = cam->get_proj_matrix();
+            glm::mat4 view = cam->get_view_matrix();
 
-            glm::mat4 projMat = cam.get_proj_matrix();
-            glm::mat4 view = cam.get_view_matrix();
-
-            /*shProgramBg->usage();
-            glUniformMatrix4fv(projLocBg, 1, GL_FALSE, glm::value_ptr(projMat));
-            glUniformMatrix4fv(viewLocBg, 1, GL_FALSE, glm::value_ptr(view));*/
+            shProgramBg->usage();
+            shProgramBg->setMat4("projection", proj);
+            shProgramBg->setMat4("view", view);
 
             backGr.bind_state("default", verBg);
             vaoBg.bind();
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-            shProgramHero->usage();
-            glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projMat));
-            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-            if (main_hero.get_attack_flag())
-            {
-                main_hero.bind_state(std::string("attack_hero"), ver);
-            }
-            else if (main_hero.get_hitWall() || pos_hero != diff_coord)
-            {
-                main_hero.bind_state(std::string("run_hero"), ver);
-            }
-            else if (pos_hero == diff_coord)
-            {
-                main_hero.bind_state(std::string("idle_hero"), ver);
-            }
-            diff_coord = pos_hero;
-
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(pos_hero.x, pos_hero.y, 0.0f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-            points_vbo.update_data(ver.data(), ver.size() * sizeof(float));
-
-            shProgramHero->usage();
-            vaoHero.bind();
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            hero.update(deltaTime, worldWidth, worldHeight, diff_coord, proj, view);
+            hero.render();
 
             /* Swap front and back buffers */
             glfwSwapBuffers(pt_window);

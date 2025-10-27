@@ -1,90 +1,45 @@
 #pragma once
 
+#include "../Camera/Camera2D.h"
+#include "../Render/IndexBuff.h"
 #include "../Render/Shaders.h"
 #include "../Render/SpriteAnim.h"
 #include "../Render/Texture2D.h"
+#include "../Render/VertexArr.h"
+#include "../Render/VertexBuffArr.h"
+#include "Persons.h"
+// #include "Resources/Resources.h"
 
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <map>
 #include <memory>
-#include <string>
 #include <vector>
-
-using state_map =
-    std::map<std::string, std::pair<std::shared_ptr<Render::Texture2D>, std::shared_ptr<Sprite::SpriteAnim>>>;
 
 namespace Objects
 {
-class Obj
+class GameObjMainHero
 {
-  protected:
-    std::shared_ptr<Render::ProgramShader> shProgram = nullptr;
-    Sprite::SpriteSize size{};
-    state_map table_state{};
-    glm::vec2 position{};
-    
-    Obj() = default;
-    Obj(std::shared_ptr<Render::ProgramShader> pr, Sprite::SpriteSize &sz, glm::vec2 &pos)
-        : shProgram{pr}, size{sz}, position{pos}
-    {
-    }
+    std::shared_ptr<Objects::MainHero> object = nullptr;
+    std::vector<float> ver{};
+    std::vector<unsigned int> indices{};
+    Render::VertexBuffArr vbo{};
+    Render::IndexBuff emo{};
+    Render::VertexArr vao{};
 
   public:
-    virtual ~Obj()
+    GameObjMainHero() = default;
+    ~GameObjMainHero() = default;
+    GameObjMainHero(const GameObjMainHero &) = delete;
+    GameObjMainHero &operator=(const GameObjMainHero &) = delete;
+    GameObjMainHero(GameObjMainHero &&right) noexcept;
+    GameObjMainHero &operator=(GameObjMainHero &&right) noexcept;
+    GameObjMainHero(std::shared_ptr<MainHero> objPtr, std::vector<float> &&arr, std::vector<unsigned int> &&ids,
+                    Render::VertexBuffArr &&vb, Render::IndexBuff &&em, Render::VertexArr &&va);
+    void init();
+    void update(float deltaTime, float worldWidth, float worldHeight, glm::vec2 &diff_coord, glm::mat4 &proj,
+                glm::mat4 &view);
+    void render();
+    glm::vec2 &get_pos_obj()
     {
-        table_state.clear();
-    };
-    virtual void set_pos(glm::vec2 ps) = 0;
-    virtual void add_state(const std::string name, std::shared_ptr<Render::Texture2D>,
-                           std::shared_ptr<Sprite::SpriteAnim>) = 0;
-    virtual void bind_state(const std::string name, std::vector<float> &ver) = 0;
-    virtual void update(float deltaTime, float widht, float hight) = 0;
-    virtual glm::vec2 get_position() const = 0;
-};
-
-class Object : public Obj
-{
-    glm::vec2 oldPos{};
-    glm::vec2 velocity{};
-    float speed{200.0f};
-    bool direction = true;
-    bool is_attack = false;
-    bool wasAttackign = false;
-    bool isRunningInPlace = false;
-
-  public:
-    Object() = default;
-    ~Object() = default;
-    Object(std::shared_ptr<Render::ProgramShader> pr, Sprite::SpriteSize &sz, glm::vec2 &pos, glm::vec2 &vel,
-           float speed = 200.0f);
-    Object(const Object &) = delete;
-    Object &operator=(const Object &) = delete;
-    Object(Object &&right) noexcept;
-    Object &operator=(Object &&right) noexcept;
-    virtual void set_pos(glm::vec2 ps) override;
-    virtual void add_state(const std::string name, std::shared_ptr<Render::Texture2D>,
-                           std::shared_ptr<Sprite::SpriteAnim>) override;
-    virtual void bind_state(const std::string name, std::vector<float> &ver) override;
-    virtual void update(float deltaTime, float widht, float hight) override;
-    virtual glm::vec2 get_position() const override
-    {
-        return position;
-    };
-    void move_object(int key, int action);
-    bool get_attack_flag() const
-    {
-        return is_attack;
-    }
-    void set_attack_flag(bool flg)
-    {
-        is_attack = flg;
-    }
-    bool get_hitWall() const
-    {
-        return isRunningInPlace;
+        return object->get_position();
     }
 };
 } // namespace Objects

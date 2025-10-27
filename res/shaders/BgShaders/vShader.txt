@@ -4,7 +4,10 @@ layout(location = 1) in vec2 texture_cords;
 
 out vec2 texCords;
 
+uniform mat4 projection;
+uniform mat4 view;
+
 void main() {
 	texCords = texture_cords;
-	gl_Position = vec4(vertex_pos, 1.0);
+	gl_Position = projection * view * vec4(vertex_pos, 1.0);
 } 

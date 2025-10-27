@@ -11,5 +11,5 @@ uniform mat4 view;
 
 void main() {
 	texCords = texture_cords;
-	gl_Position = projection * model * vec4(vertex_pos, 1.0);
+	gl_Position = projection * view * model * vec4(vertex_pos, 1.0);
 } 

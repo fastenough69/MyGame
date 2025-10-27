@@ -16,7 +16,7 @@ namespace Render {
 					unsigned char* data, 
 					unsigned int chanels=4, 
 					const GLenum filter=GL_LINEAR, 
-					const GLenum wrapMode=GL_CLAMP_TO_EDGE);
+					const GLenum wrapMode=GL_REPEAT);
 		Texture2D() = delete;
 		Texture2D(const Texture2D&) = delete;
 		Texture2D& operator=(const Texture2D&) = delete;

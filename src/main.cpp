@@ -1,4 +1,5 @@
 #include <glad/glad.h>
+
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,6 +9,7 @@
 #include <vector>
 
 #include "Camera/Camera2D.h"
+#include "Objects/Background.h"
 #include "Objects/Object.h"
 #include "Objects/Persons.h"
 #include "Render/IndexBuff.h"
@@ -76,8 +78,6 @@ int main(int argc, char **argv)
     }
 
     std::cout << "OpenGL version: " << GLVersion.major << '.' << GLVersion.minor << std::endl;
-    /*glm::mat4 projection =
-        glm::ortho(0.0f, static_cast<float>(window_SizeX), 0.0f, static_cast<float>(window_SizeY), -1.0f, 1.0f);*/
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -98,15 +98,13 @@ int main(int argc, char **argv)
         auto attack_tex = mn->loadTexture("Attack_tex", "res/textures/ATTACK 1.png");
 
         auto bg_tex = mn->loadTexture("Bg_tex", "res/textures/glacial_mountains_lightened.png");
+        auto bg_tex1 = mn->loadTexture("Bg_tex1", "res/textures/clouds_bg.png");
+        auto bg_tex2 = mn->loadTexture("Bg_tex2", "res/textures/sky_lightened.png");
+        auto bg_tex3 = mn->loadTexture("Bg_tex3", "res/textures/clouds_mg_2.png");
+        auto bg_tex4 = mn->loadTexture("Bg_tex4", "res/textures/clouds_mg_1_lightened.png");
 
         float worldWidth = 5000.0f;
         float worldHeight = (float)window_SizeY;
-
-        Sprite::SpriteSize szBg{0.0f, 0.0f, (float)(window_SizeX), (float)(window_SizeY)};
-        Objects::MainHero backGr{shProgramBg, szBg, glm::vec2(szBg.x, szBg.y), glm::vec2(0.0f, 0.0f)};
-
-        auto bg_spr = std::make_shared<Sprite::SpriteAnim>(1.0f, 1.0f);
-        backGr.add_state("default", bg_tex, bg_spr);
 
         Sprite::SpriteSize sp{0.0f, 0.0f, 200, 200};
         auto main_hero = std::make_shared<Objects::MainHero>(shProgramHero, sp, glm::vec2(sp.x, sp.y),
@@ -133,15 +131,7 @@ int main(int argc, char **argv)
         glfwSetWindowUserPointer(pt_window, main_hero.get());
         glfwSetKeyCallback(pt_window, RightKeyCallback);
 
-        // Попробуйте такие координаты для фона:k
-        // std::vector<float> verBg = {
-        //    -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, // bottom-left
-        //    1.0f,  -1.0f, 0.0f, 1.0f, 0.0f, // bottom-right
-        //    1.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right
-        //    -1.0f, 1.0f,  0.0f, 0.0f, 1.0f  // top-left
-        //};
-
-       float bgRepeatCount = 4.0f; // сколько раз повторять текстуру
+        float bgRepeatCount = 4.0f; // сколько раз повторять текстуру
         std::vector<float> verBg = {0.0f,
                                     0.0f,
                                     0.0f,
@@ -163,20 +153,35 @@ int main(int argc, char **argv)
                                     0.0f,
                                     1.0f};
 
-        unsigned int indices[] = {0, 1, 2, 2, 3, 0};
-
-        Render::VertexBuffArr points_bg;
-        Render::IndexBuff emoBg;
-        Render::VertexArr vaoBg;
-        points_bg.init(verBg.data(), verBg.size() * sizeof(float));
-        vaoBg.init();
-        vaoBg.add_buffer(points_bg, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-        vaoBg.add_buffer(points_bg, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-        emoBg.init(indices, sizeof(indices));
-        vaoBg.unbind();
-        shProgramBg->usage();
-        shProgramBg->setInt("tex", 0);
-
+        Objects::GameObjBackground bg(cam, shProgramBg,
+                                      std::vector<float>{0.0f,
+                                                         0.0f,
+                                                         0.0f,
+                                                         0.0f,
+                                                         0.0f,
+                                                         window_SizeX * bgRepeatCount,
+                                                         0.0f,
+                                                         0.0f,
+                                                         bgRepeatCount,
+                                                         0.0f,
+                                                         window_SizeX * bgRepeatCount,
+                                                         window_SizeY,
+                                                         0.0f,
+                                                         bgRepeatCount,
+                                                         1.0f,
+                                                         0.0f,
+                                                         window_SizeY,
+                                                         0.0f,
+                                                         0.0f,
+                                                         1.0f},
+                                      std::vector<unsigned int>{0, 1, 2, 2, 3, 0}, Render::VertexBuffArr{},
+                                      Render::IndexBuff{}, Render::VertexArr{});
+        bg.init();
+        bg.add_layer("first", Objects::BackroundLayer{0.9f}, bg_tex);
+        bg.add_layer("sec", Objects::BackroundLayer{0.8f}, bg_tex1);
+        bg.add_layer("thrid", Objects::BackroundLayer{1.0f}, bg_tex2);
+        bg.add_layer("four", Objects::BackroundLayer{0.6f}, bg_tex3);
+        bg.add_layer("five", Objects::BackroundLayer{0.5f}, bg_tex4);
         float lastTime = 0;
         glm::vec2 diff_coord = main_hero->get_position();
         /* Loop until the user closes the window */
@@ -189,17 +194,29 @@ int main(int argc, char **argv)
             float deltaTime = currTime - lastTime;
             lastTime = currTime;
 
+            /*if (hero.get_pos_obj().x >= worldWidth - sp.width)
+            {
+                worldWidth += worldWidth;
+            }*/
+
             cam->folow_target(hero.get_pos_obj(), worldWidth, worldHeight);
             glm::mat4 proj = cam->get_proj_matrix();
             glm::mat4 view = cam->get_view_matrix();
 
-            shProgramBg->usage();
-            shProgramBg->setMat4("projection", proj);
-            shProgramBg->setMat4("view", view);
+            bg.update_bg("thrid");
+            bg.render();
 
-            backGr.bind_state("default", verBg);
-            vaoBg.bind();
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            bg.update_bg("sec");
+            bg.render();
+
+            bg.update_bg("first");
+            bg.render();
+
+            bg.update_bg("four");
+            bg.render();
+
+            bg.update_bg("five");
+            bg.render();
 
             hero.update(deltaTime, worldWidth, worldHeight, diff_coord, proj, view);
             hero.render();

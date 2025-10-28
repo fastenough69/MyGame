@@ -19,5 +19,9 @@ class Camera2D
     void folow_target(glm::vec2 &target, float widht, float height);
     glm::mat4 get_view_matrix() const;
     glm::mat4 get_proj_matrix() const;
+    glm::vec2 get_cam_pos() const
+    {
+        return position;
+    }
 };
 } // namespace Camera

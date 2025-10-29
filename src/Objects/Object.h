@@ -88,6 +88,6 @@ class GameObjBackground : public GameObj
     virtual void init() override;
     virtual void render() override;
     void update_bg(const std::string &name);
-    void multi_coord(float& curWorldWidht);
+    // void multi_coord(float &curWorldWidht);
 };
 } // namespace Objects

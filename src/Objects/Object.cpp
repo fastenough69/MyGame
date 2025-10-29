@@ -98,9 +98,9 @@ Objects::GameObjBackground::GameObjBackground(const GameObjBackground &right)
     }
     ver = right.ver;
     indices = right.indices;
-    vbo = std::move(const_cast<GameObjBackground&>(right).vbo);
-    emo = std::move(const_cast<GameObjBackground&>(right).emo);
-    vao = (std::move(const_cast<GameObjBackground&>(right).vao));
+    vbo = std::move(const_cast<GameObjBackground &>(right).vbo);
+    emo = std::move(const_cast<GameObjBackground &>(right).emo);
+    vao = (std::move(const_cast<GameObjBackground &>(right).vao));
     shProg = right.shProg;
     cam = right.cam;
     bg_map = right.bg_map;
@@ -186,18 +186,4 @@ void Objects::GameObjBackground::render()
     shProg->usage();
     vao.bind();
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-}
-
-void Objects::GameObjBackground::multi_coord(float& curWorldWidht)
-{
-    curWorldWidht *= 2.0f;
-
-    ver[0] = ver[5];
-    ver[15] = ver[5];
-    /*ver[1] = ver[6];*/
-    ver[5] *= repeatBg;
-    ver[8] = repeatBg;
-    ver[13] = repeatBg;
-    ver[10] *= repeatBg;
-    std::cout << "VerBg: ";
 }

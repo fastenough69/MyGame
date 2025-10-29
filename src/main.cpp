@@ -90,6 +90,7 @@ int main(int argc, char **argv)
                                               "res/shaders/ObjectsShaders/fShader.txt");
         auto shProgramBg =
             mn->loadShaderPr("ShaderBg", "res/shaders/BgShaders/vShader.txt", "res/shaders/BgShaders/fShader.txt");
+
         if (!shProgramHero)
         {
             std::cerr << "Cant create program shaders" << std::endl;
@@ -105,7 +106,7 @@ int main(int argc, char **argv)
         float worldWidth = 3000.0f;
         float worldHeight = (float)window_SizeY;
 
-        Sprite::SpriteSize sp{0.0f, 100.0f, 200, 200};
+        Sprite::SpriteSize sp{0.0f, 0.0f, 200, 200};
         auto main_hero = std::make_shared<Objects::MainHero>(shProgramHero, sp, glm::vec2(sp.x, sp.y),
                                                              glm::vec2(0.0f, 0.0f), 450.0f);
         auto spr_run = std::make_shared<Sprite::SpriteAnim>(14.0f, 16.0f);
@@ -144,7 +145,6 @@ int main(int argc, char **argv)
         bg.add_layer("first", Objects::BackroundLayer{0.1f}, bg_tex1);
         bg.add_layer("sec", Objects::BackroundLayer{0.5f}, bg_tex2);
         bg.add_layer("thrid", Objects::BackroundLayer{1.0f}, bg_tex3);
-        //bg.add_layer("field", Objects::BackroundLayer{ 1.1 }, filed);
 
         float lastTime = 0;
         int frame = 0;

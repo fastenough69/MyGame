@@ -18,16 +18,12 @@ add_executable(${PROJECT_NAME}
 	src/Render/VertexArr.h
 	src/Render/IndexBuff.cpp
 	src/Render/IndexBuff.h
-	src/Render/SpriteAnim.cpp
-	src/Render/SpriteAnim.h
-	src/Objects/Object.cpp
-	src/Objects/Object.h
-	src/Objects/Persons.cpp
-	src/Objects/Persons.h
+	src/Sprite/SpriteAnim.cpp
+	src/Sprite/SpriteAnim.h
 	src/Camera/Camera2D.cpp
 	src/Camera/Camera2D.h
-	src/Objects/Background.cpp
-	src/Objects/Background.h
+	src/Background/Background.cpp
+	src/Background/Background.h
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

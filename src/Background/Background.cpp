@@ -1,6 +1,6 @@
 #include "Background.h"
 
-Objects::BackroundLayer::BackroundLayer(float offset) : offsetLayer{offset}
+Objects::BackroundLayer::BackroundLayer(float offset) : offsetLayer{ offset }
 {
 }
 

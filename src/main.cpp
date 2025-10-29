@@ -10,12 +10,8 @@
 #include <vector>
 
 #include "Camera/Camera2D.h"
-#include "Objects/Background.h"
-#include "Objects/Object.h"
-#include "Objects/Persons.h"
 #include "Render/IndexBuff.h"
 #include "Render/Shaders.h"
-#include "Render/SpriteAnim.h"
 #include "Render/Texture2D.h"
 #include "Render/VertexArr.h"
 #include "Render/VertexBuffArr.h"
@@ -38,11 +34,11 @@ static void RightKeyCallback(GLFWwindow *pt_w, int key, int scancode, int action
         glfwSetWindowShouldClose(pt_w, GL_TRUE);
     }
 
-    Objects::MainHero *obj = static_cast<Objects::MainHero *>(glfwGetWindowUserPointer(pt_w));
+    /*Objects::MainHero *obj = static_cast<Objects::MainHero *>(glfwGetWindowUserPointer(pt_w));
     if (obj)
     {
         obj->move_object(key, action);
-    }
+    }*/
 }
 
 int main(int argc, char **argv)
@@ -106,45 +102,16 @@ int main(int argc, char **argv)
         float worldWidth = 3000.0f;
         float worldHeight = (float)window_SizeY;
 
-        Sprite::SpriteSize sp{0.0f, 0.0f, 200, 200};
-        auto main_hero = std::make_shared<Objects::MainHero>(shProgramHero, sp, glm::vec2(sp.x, sp.y),
-                                                             glm::vec2(0.0f, 0.0f), 450.0f);
-        auto spr_run = std::make_shared<Sprite::SpriteAnim>(14.0f, 16.0f);
-        auto spr_idle = std::make_shared<Sprite::SpriteAnim>(10.0f, 10.0f);
-        auto spr_attack = std::make_shared<Sprite::SpriteAnim>(20.0f, 7.0f);
 
-        main_hero->add_state(std::string("run_hero"), run_tex, spr_run);
-        main_hero->add_state(std::string("idle_hero"), idle_tex, spr_idle);
-        main_hero->add_state(std::string("attack_hero"), attack_tex, spr_attack);
-
-        auto cam = std::make_shared<Camera::Camera2D>((float)window_SizeX, (float)window_SizeY);
-        Objects::GameObjMainHero hero{main_hero,
-                                      std::vector<float>{0.0f, 0.0f, 0.0f,      0.0,      0.0f,      sp.width, 0.0f,
-                                                         0.0f, 1.0f, 0.0f,      sp.width, sp.height, 0.0f,     1.0f,
-                                                         1.0f, 0.0f, sp.height, 0.0f,     0.0f,      1.0f},
-                                      std::vector<unsigned int>{0, 1, 2, 2, 3, 0},
-                                      Render::VertexBuffArr{},
-                                      Render::IndexBuff{},
-                                      Render::VertexArr{}};
-        hero.init();
-
-        glfwSetWindowUserPointer(pt_window, main_hero.get());
+        //glfwSetWindowUserPointer(pt_window, main_hero.get());
         glfwSetKeyCallback(pt_window, RightKeyCallback);
 
-        float bgRepeatCount = 5.0f;
-        Objects::GameObjBackground bg(cam, shProgramBg,
-                                      // clang-format off
-                                      std::vector<float>{ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-                                                        window_SizeX * bgRepeatCount, 0.0f, 0.0f, bgRepeatCount, 0.0f,
-                                                        window_SizeX * bgRepeatCount, window_SizeY, 0.0f, bgRepeatCount, 1.0f,
-                                                        0.0f, window_SizeY, 0.0f, 0.0f, 1.0f },
-                                      // clang-format on
-                                      std::vector<unsigned int>{0, 1, 2, 2, 3, 0}, Render::VertexBuffArr{},
-                                      Render::IndexBuff{}, Render::VertexArr{});
-        bg.init();
-        bg.add_layer("first", Objects::BackroundLayer{0.1f}, bg_tex1);
-        bg.add_layer("sec", Objects::BackroundLayer{0.5f}, bg_tex2);
-        bg.add_layer("thrid", Objects::BackroundLayer{1.0f}, bg_tex3);
+        float bgRepeatCount = 4.0f;
+        std::vector<float>vecbg{ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                        window_SizeX * bgRepeatCount, 0.0f, 0.0f, bgRepeatCount, 0.0f,
+                        window_SizeX * bgRepeatCount, window_SizeY, 0.0f, bgRepeatCount, 1.0f,
+                        0.0f, window_SizeY, 0.0f, 0.0f, 1.0f },
+                                      
 
         float lastTime = 0;
         int frame = 0;
@@ -158,7 +125,7 @@ int main(int argc, char **argv)
             float deltaTime = currTime - lastTime;
             lastTime = currTime;
 
-            cam->folow_target(hero.get_pos_obj(), worldWidth, worldHeight);
+            /*cam->folow_target(hero.get_pos_obj(), worldWidth, worldHeight);
             glm::mat4 proj = cam->get_proj_matrix();
             glm::mat4 view = cam->get_view_matrix();
 
@@ -175,7 +142,7 @@ int main(int argc, char **argv)
             bg.render();
 
             hero.update(deltaTime, worldWidth, worldHeight, proj, view);
-            hero.render();
+            hero.render();*/
 
             /*if (frame++ % 360 == 0)
             {

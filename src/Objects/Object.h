@@ -12,6 +12,7 @@
 
 #include <map>
 #include <memory>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -54,9 +55,8 @@ class GameObjMainHero : public GameObj
     GameObjMainHero(std::shared_ptr<MainHero> objPtr, std::vector<float> &&arr, std::vector<unsigned int> &&ids,
                     Render::VertexBuffArr &&vb, Render::IndexBuff &&em, Render::VertexArr &&va);
     virtual void init() override;
-    void update(float deltaTime, float worldWidth, float worldHeight, glm::vec2 &diff_coord, glm::mat4 &proj,
-                        glm::mat4 &view);
     virtual void render() override;
+    void update(float deltaTime, float &worldWidth, float &worldHeight, glm::mat4 &proj, glm::mat4 &view);
     glm::vec2 get_pos_obj()
     {
         return object->get_position();
@@ -68,20 +68,26 @@ class GameObjBackground : public GameObj
     std::shared_ptr<Render::ProgramShader> shProg = nullptr;
     std::shared_ptr<Camera::Camera2D> cam = nullptr;
     chahe_map bg_map{};
+    float repeatBg = 2.0f;
+    void swap(GameObjBackground &obj) noexcept;
 
   public:
     GameObjBackground() = default;
-    ~GameObjBackground() = default;
+    ~GameObjBackground()
+    {
+        bg_map.clear();
+    };
     GameObjBackground(std::shared_ptr<Camera::Camera2D> cm, std::shared_ptr<Render::ProgramShader> ptr,
                       std::vector<float> &&arr, std::vector<unsigned int> &&ids, Render::VertexBuffArr &&vb,
                       Render::IndexBuff &&em, Render::VertexArr &&va);
-    GameObjBackground(const GameObjBackground&) = delete;
-    GameObjBackground& operator=(const GameObjBackground&) = delete;
-    GameObjBackground(GameObjBackground&&) = delete;
-    GameObjBackground& operator=(GameObjBackground&&) = delete;
+    GameObjBackground(const GameObjBackground &);
+    GameObjBackground &operator=(const GameObjBackground &);
+    GameObjBackground(GameObjBackground &&) noexcept;
+    GameObjBackground &operator=(GameObjBackground &&) noexcept;
     void add_layer(const std::string &name, BackroundLayer &lay, std::shared_ptr<Render::Texture2D> tex);
     virtual void init() override;
-    void update_bg(const std::string& name);
     virtual void render() override;
+    void update_bg(const std::string &name);
+    void multi_coord(float& curWorldWidht);
 };
 } // namespace Objects

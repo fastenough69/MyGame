@@ -22,6 +22,7 @@ namespace Render{
 		bool usage() const;
 		void setInt(const std::string& name, const GLint value);
         void setMat4(const std::string &name, glm::mat4 matrix);
+		void setVec2(const std::string& name, glm::vec2 offset);
 		GLuint get_id() const;
 
 		ProgramShader() = delete;

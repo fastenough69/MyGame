@@ -84,6 +84,11 @@ void Render::ProgramShader::setMat4(const std::string &name, glm::mat4 matrix)
     glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
+void Render::ProgramShader::setVec2(const std::string &name, glm::vec2 offset)
+{
+    glUniform2fv(glGetUniformLocation(m_id, name.c_str()), 1, glm::value_ptr(offset));
+}
+
 GLuint Render::ProgramShader::get_id() const
 {
     return m_id;

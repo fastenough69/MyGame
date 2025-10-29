@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -81,7 +82,7 @@ int main(int argc, char **argv)
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // —ине-зеленый фон
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     {
         ResourceManager *mn = ResourceManager::getInstance(argv[0]);
@@ -97,18 +98,16 @@ int main(int argc, char **argv)
         auto idle_tex = mn->loadTexture("Idle_tex", "res/textures/IDLE.png");
         auto attack_tex = mn->loadTexture("Attack_tex", "res/textures/ATTACK 1.png");
 
-        auto bg_tex = mn->loadTexture("Bg_tex", "res/textures/glacial_mountains_lightened.png");
-        auto bg_tex1 = mn->loadTexture("Bg_tex1", "res/textures/clouds_bg.png");
-        auto bg_tex2 = mn->loadTexture("Bg_tex2", "res/textures/sky_lightened.png");
-        auto bg_tex3 = mn->loadTexture("Bg_tex3", "res/textures/clouds_mg_2.png");
-        auto bg_tex4 = mn->loadTexture("Bg_tex4", "res/textures/clouds_mg_1_lightened.png");
+        auto bg_tex1 = mn->loadTexture("Bg_tex", "res/textures/background_layer_1.png");
+        auto bg_tex2 = mn->loadTexture("Bg_tex1", "res/textures/background_layer_2.png");
+        auto bg_tex3 = mn->loadTexture("Bg_tex2", "res/textures/background_layer_3.png");
 
-        float worldWidth = 5000.0f;
+        float worldWidth = 3000.0f;
         float worldHeight = (float)window_SizeY;
 
-        Sprite::SpriteSize sp{0.0f, 0.0f, 200, 200};
+        Sprite::SpriteSize sp{0.0f, 100.0f, 200, 200};
         auto main_hero = std::make_shared<Objects::MainHero>(shProgramHero, sp, glm::vec2(sp.x, sp.y),
-                                                             glm::vec2(0.0f, 0.0f), 600.0f);
+                                                             glm::vec2(0.0f, 0.0f), 450.0f);
         auto spr_run = std::make_shared<Sprite::SpriteAnim>(14.0f, 16.0f);
         auto spr_idle = std::make_shared<Sprite::SpriteAnim>(10.0f, 10.0f);
         auto spr_attack = std::make_shared<Sprite::SpriteAnim>(20.0f, 7.0f);
@@ -119,7 +118,7 @@ int main(int argc, char **argv)
 
         auto cam = std::make_shared<Camera::Camera2D>((float)window_SizeX, (float)window_SizeY);
         Objects::GameObjMainHero hero{main_hero,
-                                      std::vector<float>{0.0f, 0.0f, 0.0f,      0.0f,     0.0f,      sp.width, 0.0f,
+                                      std::vector<float>{0.0f, 0.0f, 0.0f,      0.0,      0.0f,      sp.width, 0.0f,
                                                          0.0f, 1.0f, 0.0f,      sp.width, sp.height, 0.0f,     1.0f,
                                                          1.0f, 0.0f, sp.height, 0.0f,     0.0f,      1.0f},
                                       std::vector<unsigned int>{0, 1, 2, 2, 3, 0},
@@ -131,59 +130,24 @@ int main(int argc, char **argv)
         glfwSetWindowUserPointer(pt_window, main_hero.get());
         glfwSetKeyCallback(pt_window, RightKeyCallback);
 
-        float bgRepeatCount = 4.0f; // сколько раз повтор€ть текстуру
-        std::vector<float> verBg = {0.0f,
-                                    0.0f,
-                                    0.0f,
-                                    0.0f,
-                                    0.0f,
-                                    window_SizeX * bgRepeatCount,
-                                    0.0f,
-                                    0.0f,
-                                    bgRepeatCount,
-                                    0.0f,
-                                    window_SizeX * bgRepeatCount,
-                                    window_SizeY,
-                                    0.0f,
-                                    bgRepeatCount,
-                                    1.0f,
-                                    0.0f,
-                                    window_SizeY,
-                                    0.0f,
-                                    0.0f,
-                                    1.0f};
-
+        float bgRepeatCount = 5.0f;
         Objects::GameObjBackground bg(cam, shProgramBg,
-                                      std::vector<float>{0.0f,
-                                                         0.0f,
-                                                         0.0f,
-                                                         0.0f,
-                                                         0.0f,
-                                                         window_SizeX * bgRepeatCount,
-                                                         0.0f,
-                                                         0.0f,
-                                                         bgRepeatCount,
-                                                         0.0f,
-                                                         window_SizeX * bgRepeatCount,
-                                                         window_SizeY,
-                                                         0.0f,
-                                                         bgRepeatCount,
-                                                         1.0f,
-                                                         0.0f,
-                                                         window_SizeY,
-                                                         0.0f,
-                                                         0.0f,
-                                                         1.0f},
+                                      // clang-format off
+                                      std::vector<float>{ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                                                        window_SizeX * bgRepeatCount, 0.0f, 0.0f, bgRepeatCount, 0.0f,
+                                                        window_SizeX * bgRepeatCount, window_SizeY, 0.0f, bgRepeatCount, 1.0f,
+                                                        0.0f, window_SizeY, 0.0f, 0.0f, 1.0f },
+                                      // clang-format on
                                       std::vector<unsigned int>{0, 1, 2, 2, 3, 0}, Render::VertexBuffArr{},
                                       Render::IndexBuff{}, Render::VertexArr{});
         bg.init();
-        bg.add_layer("first", Objects::BackroundLayer{0.9f}, bg_tex);
-        bg.add_layer("sec", Objects::BackroundLayer{0.8f}, bg_tex1);
-        bg.add_layer("thrid", Objects::BackroundLayer{1.0f}, bg_tex2);
-        bg.add_layer("four", Objects::BackroundLayer{0.6f}, bg_tex3);
-        bg.add_layer("five", Objects::BackroundLayer{0.5f}, bg_tex4);
+        bg.add_layer("first", Objects::BackroundLayer{0.1f}, bg_tex1);
+        bg.add_layer("sec", Objects::BackroundLayer{0.5f}, bg_tex2);
+        bg.add_layer("thrid", Objects::BackroundLayer{1.0f}, bg_tex3);
+        //bg.add_layer("field", Objects::BackroundLayer{ 1.1 }, filed);
+
         float lastTime = 0;
-        glm::vec2 diff_coord = main_hero->get_position();
+        int frame = 0;
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(pt_window))
         {
@@ -194,32 +158,30 @@ int main(int argc, char **argv)
             float deltaTime = currTime - lastTime;
             lastTime = currTime;
 
-            /*if (hero.get_pos_obj().x >= worldWidth - sp.width)
-            {
-                worldWidth += worldWidth;
-            }*/
-
             cam->folow_target(hero.get_pos_obj(), worldWidth, worldHeight);
             glm::mat4 proj = cam->get_proj_matrix();
             glm::mat4 view = cam->get_view_matrix();
 
-            bg.update_bg("thrid");
-            bg.render();
-
-            bg.update_bg("sec");
+            bg.update_bg("field");
             bg.render();
 
             bg.update_bg("first");
             bg.render();
 
-            bg.update_bg("four");
+            bg.update_bg("sec");
             bg.render();
 
-            bg.update_bg("five");
+            bg.update_bg("thrid");
             bg.render();
 
-            hero.update(deltaTime, worldWidth, worldHeight, diff_coord, proj, view);
+            hero.update(deltaTime, worldWidth, worldHeight, proj, view);
             hero.render();
+
+            /*if (frame++ % 360 == 0)
+            {
+                std::cout << cam->get_cam_pos().x << ' ' << cam->get_cam_pos().y << ' ' << "curWorldHeight: " << ' ' <<
+            worldWidth << std::endl;
+            }*/
 
             /* Swap front and back buffers */
             glfwSwapBuffers(pt_window);

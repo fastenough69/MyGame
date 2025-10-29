@@ -27,7 +27,6 @@ class Obj
     glm::vec2 position{};
 
     Obj() = default;
-    
 
   public:
     Obj(std::shared_ptr<Render::ProgramShader> pr, Sprite::SpriteSize &sz, glm::vec2 &pos)
@@ -91,6 +90,10 @@ class MainHero : public Obj
     bool get_hitWall() const
     {
         return isRunningInPlace;
+    }
+    glm::vec2 get_old_pos() const
+    {
+        return oldPos;
     }
 };
 } // namespace Objects

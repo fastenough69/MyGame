@@ -15,7 +15,10 @@ class Camera2D
     Camera2D(float width, float height);
     Camera2D() = default;
     ~Camera2D() = default;
-
+    Camera2D(const Camera2D &) = delete;
+    Camera2D &operator=(const Camera2D &) = delete;
+    Camera2D(Camera2D &&) = delete;
+    Camera2D &operator=(Camera2D &&) = delete;
     void folow_target(glm::vec2 &target, float widht, float height);
     glm::mat4 get_view_matrix() const;
     glm::mat4 get_proj_matrix() const;

@@ -9,7 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "Background/Background.h"
 #include "Camera/Camera2D.h"
+#include "Decor/Decor.h"
 #include "Render/IndexBuff.h"
 #include "Render/Shaders.h"
 #include "Render/Texture2D.h"
@@ -34,10 +36,9 @@ static void RightKeyCallback(GLFWwindow *pt_w, int key, int scancode, int action
         glfwSetWindowShouldClose(pt_w, GL_TRUE);
     }
 
-    /*Objects::MainHero *obj = static_cast<Objects::MainHero *>(glfwGetWindowUserPointer(pt_w));
+    /*Camera::Camera2D *obj = static_cast<Camera::Camera2D *>(glfwGetWindowUserPointer(pt_w));
     if (obj)
     {
-        obj->move_object(key, action);
     }*/
 }
 
@@ -68,6 +69,8 @@ int main(int argc, char **argv)
     /* Make the window's context current */
     glfwMakeContextCurrent(pt_window);
 
+    // glfwSwapInterval(0);
+
     if (!gladLoadGL())
     {
         std::cout << "glad not found\n";
@@ -82,39 +85,82 @@ int main(int argc, char **argv)
 
     {
         ResourceManager *mn = ResourceManager::getInstance(argv[0]);
-        auto shProgramHero = mn->loadShaderPr("DefaultShaders", "res/shaders/ObjectsShaders/vShader.txt",
-                                              "res/shaders/ObjectsShaders/fShader.txt");
+        /*auto shProgramHero = mn->loadShaderPr("DefaultShaders", "res/shaders/ObjectsShaders/vShader.txt",
+                                              "res/shaders/ObjectsShaders/fShader.txt");*/
         auto shProgramBg =
             mn->loadShaderPr("ShaderBg", "res/shaders/BgShaders/vShader.txt", "res/shaders/BgShaders/fShader.txt");
 
-        if (!shProgramHero)
+        if (!shProgramBg)
         {
             std::cerr << "Cant create program shaders" << std::endl;
         }
-        auto run_tex = mn->loadTexture("Run_tex", "res/textures/RUN.png");
+        /*auto run_tex = mn->loadTexture("Run_tex", "res/textures/RUN.png");
         auto idle_tex = mn->loadTexture("Idle_tex", "res/textures/IDLE.png");
-        auto attack_tex = mn->loadTexture("Attack_tex", "res/textures/ATTACK 1.png");
+        auto attack_tex = mn->loadTexture("Attack_tex", "res/textures/ATTACK 1.png");*/
 
         auto bg_tex1 = mn->loadTexture("Bg_tex", "res/textures/background_layer_1.png");
         auto bg_tex2 = mn->loadTexture("Bg_tex1", "res/textures/background_layer_2.png");
         auto bg_tex3 = mn->loadTexture("Bg_tex2", "res/textures/background_layer_3.png");
 
+        auto tailset = mn->loadTexture("TailSet1", "res/textures/oak_woods_tileset.png");
+
         float worldWidth = 3000.0f;
         float worldHeight = (float)window_SizeY;
 
+        float bgRepeatCount = 1.0f;
+        std::vector<float> vecbg{0.0f,
+                                 0.0f,
+                                 0.0f,
+                                 0.0f,
+                                 0.0f,
+                                 window_SizeX * bgRepeatCount,
+                                 0.0f,
+                                 0.0f,
+                                 bgRepeatCount,
+                                 0.0f,
+                                 window_SizeX * bgRepeatCount,
+                                 window_SizeY,
+                                 0.0f,
+                                 bgRepeatCount,
+                                 1.0f,
+                                 0.0f,
+                                 window_SizeY,
+                                 0.0f,
+                                 0.0f,
+                                 1.0f};
 
-        //glfwSetWindowUserPointer(pt_window, main_hero.get());
+        std::shared_ptr<Camera::Camera2D> camera = std::make_shared<Camera::Camera2D>(window_SizeX, window_SizeY);
+        Objects::BackgroundParalax bg{camera, shProgramBg, std::move(vecbg),
+                                      std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
+        bg.init();
+        bg.add_layer("first", 0.2f, bg_tex1);
+        bg.add_layer("sec", 0.5f, bg_tex2);
+        bg.add_layer("thrid", 1.0f, bg_tex3);
+
+        std::vector<Objects::DecorObj> obj{ 20, {camera,
+                              shProgramBg,
+                              tailset,
+                              Objects::SizeTexture{119.0f, 337.0f, 97.0f, 23.0f, 504.0f, 360.0f},
+                              std::vector<float>{0.0f,  0.0f,  0.0f, 0.0f, 0.0f, 97.0f, 0.0f,  0.0f, 0.0f, 0.0f,
+                                                 97.0f, 23.0f, 0.0f, 0.0f, 0.0f, 0.0f,  23.0f, 0.0f, 0.0f, 0.0f},
+                              std::vector<unsigned int>{0, 1, 2, 2, 3, 0}} };
+        auto vertecies = Objects::new_coords(obj[0].get_vertecies(), 20);
+        for (int i{}; i < 20; i++)
+        {
+            obj[i].set_vertecies(vertecies[i]);
+        }
+
+        for(int i{}; i < 20; i++)
+        {
+            obj[i].init();
+        }
+
+        // glfwSetWindowUserPointer(pt_window, main_hero.get());
         glfwSetKeyCallback(pt_window, RightKeyCallback);
-
-        float bgRepeatCount = 4.0f;
-        std::vector<float>vecbg{ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-                        window_SizeX * bgRepeatCount, 0.0f, 0.0f, bgRepeatCount, 0.0f,
-                        window_SizeX * bgRepeatCount, window_SizeY, 0.0f, bgRepeatCount, 1.0f,
-                        0.0f, window_SizeY, 0.0f, 0.0f, 1.0f },
-                                      
 
         float lastTime = 0;
         int frame = 0;
+        glm::vec2 pos{500.0f, 0.0f};
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(pt_window))
         {
@@ -125,30 +171,40 @@ int main(int argc, char **argv)
             float deltaTime = currTime - lastTime;
             lastTime = currTime;
 
-            /*cam->folow_target(hero.get_pos_obj(), worldWidth, worldHeight);
-            glm::mat4 proj = cam->get_proj_matrix();
-            glm::mat4 view = cam->get_view_matrix();
-
-            bg.update_bg("field");
-            bg.render();
-
-            bg.update_bg("first");
-            bg.render();
-
-            bg.update_bg("sec");
-            bg.render();
-
-            bg.update_bg("thrid");
-            bg.render();
-
-            hero.update(deltaTime, worldWidth, worldHeight, proj, view);
-            hero.render();*/
-
-            /*if (frame++ % 360 == 0)
+            if (glfwGetKey(pt_window, GLFW_KEY_D) == GLFW_PRESS)
             {
-                std::cout << cam->get_cam_pos().x << ' ' << cam->get_cam_pos().y << ' ' << "curWorldHeight: " << ' ' <<
-            worldWidth << std::endl;
-            }*/
+                pos.x += 500.0f * deltaTime;
+                if (pos.x >= worldWidth) pos.x = worldWidth;
+            }
+
+            if (glfwGetKey(pt_window, GLFW_KEY_A) == GLFW_PRESS)
+            {
+                pos.x -= 500.0f * deltaTime;
+                if (pos.x <= 0) pos.x = 0;
+            }
+
+            camera->folow_target(pos, worldWidth, worldHeight);
+
+            bg.update("first");
+            bg.render();
+
+            bg.update("sec");
+            bg.render();
+
+            bg.update("thrid");
+            bg.render();
+
+            for (int i{}; i < 20; i++)
+            {
+                obj[i].update();
+                obj[i].render();
+            }
+
+            if (frame++ % 360 == 0)
+            {
+                std::cout << pos.x << ' ' << pos.y << std::endl;
+                std::cout << frame / glfwGetTime() << std::endl;
+            }
 
             /* Swap front and back buffers */
             glfwSwapBuffers(pt_window);

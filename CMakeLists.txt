@@ -24,6 +24,8 @@ add_executable(${PROJECT_NAME}
 	src/Camera/Camera2D.h
 	src/Background/Background.cpp
 	src/Background/Background.h
+	src/Decor/Decor.cpp
+	src/Decor/Decor.h
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

@@ -10,7 +10,6 @@ struct SpriteSize
 {
     float x, y;
     float width, height;
-    //float widthTex, heightTex;
 };
 
 class SpriteAnim

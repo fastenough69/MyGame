@@ -5,22 +5,24 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "Background/Background.h"
 #include "Camera/Camera2D.h"
 #include "Decor/Decor.h"
-#include "Render/IndexBuff.h"
 #include "Render/Shaders.h"
 #include "Render/Texture2D.h"
-#include "Render/VertexArr.h"
-#include "Render/VertexBuffArr.h"
 #include "Resources/Resources.h"
 
-float window_SizeX = 1600;
-float window_SizeY = 900;
+float window_SizeX = 800;
+float window_SizeY = 600;
+
+int rand_float(int range)
+{
+    int res = rand() % range;
+    return res;
+}
 
 static void WindowSizeCallback(GLFWwindow *pt_w, int widht, int heigth)
 {
@@ -69,7 +71,7 @@ int main(int argc, char **argv)
     /* Make the window's context current */
     glfwMakeContextCurrent(pt_window);
 
-    // glfwSwapInterval(0);
+    glfwSwapInterval(0);
 
     if (!gladLoadGL())
     {
@@ -107,7 +109,7 @@ int main(int argc, char **argv)
         float worldWidth = 3000.0f;
         float worldHeight = (float)window_SizeY;
 
-        float bgRepeatCount = 1.0f;
+        float bgRepeatCount = 6.0f;
         std::vector<float> vecbg{0.0f,
                                  0.0f,
                                  0.0f,
@@ -137,30 +139,44 @@ int main(int argc, char **argv)
         bg.add_layer("sec", 0.5f, bg_tex2);
         bg.add_layer("thrid", 1.0f, bg_tex3);
 
-        std::vector<Objects::DecorObj> obj{ 20, {camera,
-                              shProgramBg,
-                              tailset,
-                              Objects::SizeTexture{119.0f, 337.0f, 97.0f, 23.0f, 504.0f, 360.0f},
-                              std::vector<float>{0.0f,  0.0f,  0.0f, 0.0f, 0.0f, 97.0f, 0.0f,  0.0f, 0.0f, 0.0f,
-                                                 97.0f, 23.0f, 0.0f, 0.0f, 0.0f, 0.0f,  23.0f, 0.0f, 0.0f, 0.0f},
-                              std::vector<unsigned int>{0, 1, 2, 2, 3, 0}} };
-        auto vertecies = Objects::new_coords(obj[0].get_vertecies(), 20);
-        for (int i{}; i < 20; i++)
+        std::vector<Objects::DecorObj> objs{static_cast<unsigned int>(worldWidth / 71) + 1,
+                                            {camera, shProgramBg, tailset,
+                                             Objects::SizeTexture{120.0f, 169.0f, 71.0f, 23.0f, 504.0f, 360.0f},
+                                             glm::vec2(0.0f, 23.0f), std::vector<unsigned int>{0, 1, 2, 2, 3, 0}}};
+        auto vertecies = Objects::new_coords(objs[0].get_vertecies(), static_cast<unsigned int>(worldWidth / 71) + 1);
+        for (int i{}; i < objs.size(); i++)
         {
-            obj[i].set_vertecies(vertecies[i]);
+            objs[i].set_vertecies(vertecies[i]);
+            objs[i].init();
         }
 
-        for(int i{}; i < 20; i++)
+        std::vector<Objects::DecorObj> dirt{static_cast<unsigned int>(worldWidth / 71) + 1,
+                                            {camera, shProgramBg, tailset,
+                                             Objects::SizeTexture{120.0f, 73.0f, 71.0f, 23.0f, 504.0f, 360.0f},
+                                             glm::vec2(0.0f, 0.0f), std::vector<unsigned int>{0, 1, 2, 2, 3, 0}}};
+        auto ver_dirts = Objects::new_coords(dirt[0].get_vertecies(), static_cast<unsigned int>(worldWidth / 71) + 1);
+        for (int i{}; i < dirt.size(); i++)
         {
-            obj[i].init();
+            dirt[i].set_vertecies(ver_dirts[i]);
+            dirt[i].init();
         }
+        srand(time((time_t*)0));
+        int x = rand_float(2000);
+        std::cout << x << std::endl;
+        Objects::DecorObj ramp{camera,
+                               shProgramBg,
+                               tailset,
+                               Objects::SizeTexture{0.0f, 193.0f, 95.0f, 47.0f, 504.0f, 360.0f},
+                               glm::vec2(x, 23.0f),
+                               std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
+        ramp.init();
 
         // glfwSetWindowUserPointer(pt_window, main_hero.get());
         glfwSetKeyCallback(pt_window, RightKeyCallback);
 
         float lastTime = 0;
         int frame = 0;
-        glm::vec2 pos{500.0f, 0.0f};
+        glm::vec2 pos{800.0f, 0.0f};
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(pt_window))
         {
@@ -174,13 +190,15 @@ int main(int argc, char **argv)
             if (glfwGetKey(pt_window, GLFW_KEY_D) == GLFW_PRESS)
             {
                 pos.x += 500.0f * deltaTime;
-                if (pos.x >= worldWidth) pos.x = worldWidth;
+                if (pos.x >= worldWidth - 800)
+                    pos.x = worldWidth - 800;
             }
 
             if (glfwGetKey(pt_window, GLFW_KEY_A) == GLFW_PRESS)
             {
                 pos.x -= 500.0f * deltaTime;
-                if (pos.x <= 0) pos.x = 0;
+                if (pos.x <= 800)
+                    pos.x = 800;
             }
 
             camera->folow_target(pos, worldWidth, worldHeight);
@@ -194,17 +212,27 @@ int main(int argc, char **argv)
             bg.update("thrid");
             bg.render();
 
-            for (int i{}; i < 20; i++)
+            for (int i{}; i < objs.size(); i++)
             {
-                obj[i].update();
-                obj[i].render();
+                objs[i].update();
+                objs[i].render();
             }
+            for (int i{}; i < dirt.size(); i++)
+            {
+                dirt[i].update();
+                dirt[i].render();
+            }
+            ramp.update();
+            ramp.render();
 
-            if (frame++ % 360 == 0)
+             if (frame++ % 360 == 0)
             {
-                std::cout << pos.x << ' ' << pos.y << std::endl;
-                std::cout << frame / glfwGetTime() << std::endl;
-            }
+                 /*std::cout << pos.x << ' ' << pos.y << std::endl;
+                 std::cout << frame / glfwGetTime() << std::endl;*/
+                 double x, y;
+                 glfwGetCursorPos(pt_window, &x, &y);
+                 std::cout << x << ' ' << y << std::endl;
+             }
 
             /* Swap front and back buffers */
             glfwSwapBuffers(pt_window);

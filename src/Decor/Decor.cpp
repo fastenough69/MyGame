@@ -17,20 +17,11 @@ std::vector<std::vector<float>> Objects::new_coords(std::vector<float> first, un
     for (int i = 1; i < count; i++)
     {
 
-        res[i][0] = res[i - 1][10];
+        res[i][0] = res[i - 1][10] - 5.0f;
         res[i][5] = res[i - 1][10] + widht;
         res[i][10] = res[i - 1][10] + widht;
         res[i][15] = res[i - 1][10];
     }
-
-    /*for (int i{}; i < count; i++)
-    {
-        for (int j{}; j < 20; j++)
-        {
-            std::cout << res[i][j] << ' ';
-        }
-        std::cout << std::endl;
-    }*/
     return res;
 }
 
@@ -48,13 +39,24 @@ void Objects::DecorObj::swap(DecorObj copy)
 }
 
 Objects::DecorObj::DecorObj(std::shared_ptr<Camera::Camera2D> cm, std::shared_ptr<Render::ProgramShader> prog,
-                            std::shared_ptr<Render::Texture2D> tx, SizeTexture &&size, std::vector<float> &&vr,
+                            std::shared_ptr<Render::Texture2D> tx, SizeTexture &&size, glm::vec2 &&pt,
                             std::vector<unsigned int> &&indices)
-    : cam{cm}, shProg{prog}, tex{tx}, ver{vr}, ids{indices}
+    : cam{cm}, shProg{prog}, tex{tx}, ids{indices}, sizeTx{size}, point{pt}
 {
-    cord = get_uv_coords(size);
+    cord = get_uv_coords(sizeTx);
+    ver = std::vector<float>(20, 0.0f);
     if (ver.size() == 20)
     {
+        // vertecies
+        ver[0] = point.x;
+        ver[1] = point.y;
+        ver[5] = point.x + sizeTx.widht;
+        ver[6] = point.y;
+        ver[10] = point.x + sizeTx.widht;
+        ver[11] = point.y + sizeTx.height;
+        ver[15] = point.x;
+        ver[16] = point.y + sizeTx.height;
+        // tex coord
         ver[3] = cord.min_u;
         ver[4] = cord.min_v;
         ver[8] = cord.max_u;
@@ -69,9 +71,9 @@ Objects::DecorObj::DecorObj(std::shared_ptr<Camera::Camera2D> cm, std::shared_pt
     vao = Render::VertexArr{};
 }
 
-Objects::DecorObj::DecorObj(const DecorObj& right)
+Objects::DecorObj::DecorObj(const DecorObj &right)
 {
-    if(this == &right)
+    if (this == &right)
     {
         return;
     }
@@ -86,14 +88,14 @@ Objects::DecorObj::DecorObj(const DecorObj& right)
     vao = Render::VertexArr{};
 }
 
-Objects::DecorObj& Objects::DecorObj::operator=(const DecorObj& right)
+Objects::DecorObj &Objects::DecorObj::operator=(const DecorObj &right)
 {
-    DecorObj copy{ right };
+    DecorObj copy{right};
     swap(copy);
     return *this;
 }
 
-Objects::DecorObj::DecorObj(DecorObj&& right) noexcept
+Objects::DecorObj::DecorObj(DecorObj &&right) noexcept
 {
     if (this == &right)
     {
@@ -113,9 +115,9 @@ Objects::DecorObj::DecorObj(DecorObj&& right) noexcept
     right.tex = nullptr;
 }
 
-Objects::DecorObj& Objects::DecorObj::operator=(DecorObj&& right) noexcept
+Objects::DecorObj &Objects::DecorObj::operator=(DecorObj &&right) noexcept
 {
-    DecorObj copy{ std::move(right) };
+    DecorObj copy{std::move(right)};
     swap(copy);
     return *this;
 }
@@ -139,7 +141,6 @@ void Objects::DecorObj::update()
     shProg->setMat4("projection", cam->get_proj_matrix());
     shProg->setMat4("view", cam->get_view_matrix());
     shProg->setMat4("model", glm::mat4(1.0f));
-    vbo.update_data(ver.data(), sizeof(float) * ver.size());
 }
 
 void Objects::DecorObj::render()
@@ -157,4 +158,14 @@ void Objects::DecorObj::set_vertecies(std::vector<float> &new_ver)
 std::vector<float> Objects::DecorObj::get_vertecies() const
 {
     return ver;
+}
+
+void Objects::DecorObj::set_uvCord(SizeTexture &&size)
+{
+    cord = get_uv_coords(size);
+}
+
+Objects::SizeTexture Objects::DecorObj::get_szTexture() const
+{
+    return sizeTx;
 }

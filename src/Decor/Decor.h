@@ -37,8 +37,10 @@ class DecorObj
     std::shared_ptr<Camera::Camera2D> cam = nullptr;
     std::shared_ptr<Render::ProgramShader> shProg = nullptr;
     std::shared_ptr<Render::Texture2D> tex = nullptr;
+    SizeTexture sizeTx{};
     uvCoords cord{};
-    std::vector<float> ver{20, 0.0f};
+    glm::vec2 point{};
+    std::vector<float> ver{};
     std::vector<unsigned int> ids{};
     Render::VertexBuffArr vbo{};
     Render::IndexBuff emo{};
@@ -49,16 +51,18 @@ class DecorObj
     DecorObj() = default;
     ~DecorObj() = default;
     DecorObj(std::shared_ptr<Camera::Camera2D> cm, std::shared_ptr<Render::ProgramShader> prog,
-             std::shared_ptr<Render::Texture2D> tx, SizeTexture &&size, std::vector<float> &&vr,
+             std::shared_ptr<Render::Texture2D> tx, SizeTexture &&size, glm::vec2 &&pt,
              std::vector<unsigned int> &&indices);
-    DecorObj(const DecorObj&);
-    DecorObj& operator=(const DecorObj&);
-    DecorObj(DecorObj&&) noexcept;
-    DecorObj& operator=(DecorObj&&) noexcept;
+    DecorObj(const DecorObj &);
+    DecorObj &operator=(const DecorObj &);
+    DecorObj(DecorObj &&) noexcept;
+    DecorObj &operator=(DecorObj &&) noexcept;
     void init();
     void update();
     void render();
     void set_vertecies(std::vector<float> &new_ver);
     std::vector<float> get_vertecies() const;
+    void set_uvCord(SizeTexture &&size);
+    SizeTexture get_szTexture() const;
 };
 } // namespace Objects

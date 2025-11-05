@@ -92,7 +92,7 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture(const std::strin
     }
 
     auto currTexture = std::make_shared<Render::Texture2D>(widht, height, data, chanels, GL_NEAREST);
-    //currTexture->clear_alpha_chanel(data, widht, height);
+    // currTexture->clear_alpha_chanel(data, widht, height);
     if (t_map.count(texName) == 0)
     {
         t_map.emplace(texName, currTexture);

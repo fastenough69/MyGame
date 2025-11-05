@@ -7,6 +7,7 @@
 #include "../Render/VertexArr.h"
 #include "../Render/VertexBuffArr.h"
 
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -31,6 +32,7 @@ struct SizeTexture
 
 static uvCoords get_uv_coords(const SizeTexture &size);
 std::vector<std::vector<float>> new_coords(std::vector<float> first, unsigned int count);
+void set_new_coord(const std::vector<float> &prev, std::vector<float> &curr, float widht);
 
 class DecorObj
 {
@@ -46,6 +48,7 @@ class DecorObj
     Render::IndexBuff emo{};
     Render::VertexArr vao{};
     void swap(DecorObj copy);
+    void set_new_point(glm::vec2 mousePos, GLFWwindow *window);
 
   public:
     DecorObj() = default;
@@ -58,7 +61,7 @@ class DecorObj
     DecorObj(DecorObj &&) noexcept;
     DecorObj &operator=(DecorObj &&) noexcept;
     void init();
-    void update();
+    void update(glm::vec2 mousePos, GLFWwindow *window);
     void render();
     void set_vertecies(std::vector<float> &new_ver);
     std::vector<float> get_vertecies() const;

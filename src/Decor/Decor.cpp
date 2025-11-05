@@ -25,6 +25,14 @@ std::vector<std::vector<float>> Objects::new_coords(std::vector<float> first, un
     return res;
 }
 
+void Objects::set_new_coord(const std::vector<float> &prev, std::vector<float> &curr, float widht)
+{
+    curr[0] = prev[10] - 5.0f;
+    curr[5] = prev[10] + widht;
+    curr[10] = prev[10] + widht;
+    curr[15] = prev[10];
+}
+
 void Objects::DecorObj::swap(DecorObj copy)
 {
     std::swap(cam, copy.cam);
@@ -33,29 +41,44 @@ void Objects::DecorObj::swap(DecorObj copy)
     std::swap(ver, copy.ver);
     std::swap(ids, copy.ids);
     std::swap(cord, copy.cord);
+    std::swap(point, copy.point);
     vbo = std::move(copy.vbo);
     emo = std::move(copy.emo);
     vao = std::move(copy.vao);
 }
 
+void Objects::DecorObj::set_new_point(glm::vec2 mousePos, GLFWwindow *window)
+{
+    if ((mousePos.x >= point.x || mousePos.x <= point.x + sizeTx.widht) &&
+        (mousePos.y >= point.y || mousePos.y <= point.y + sizeTx.height))
+    {
+        /* std::cout << "Mouse in object\n";
+         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+         {
+             std::cout << "Move object with mouse\n";
+             point = mousePos;
+         }*/
+    }
+}
+
 Objects::DecorObj::DecorObj(std::shared_ptr<Camera::Camera2D> cm, std::shared_ptr<Render::ProgramShader> prog,
                             std::shared_ptr<Render::Texture2D> tx, SizeTexture &&size, glm::vec2 &&pt,
                             std::vector<unsigned int> &&indices)
-    : cam{cm}, shProg{prog}, tex{tx}, ids{indices}, sizeTx{size}, point{pt}
+    : cam{cm}, shProg{prog}, tex{tx}, ids{indices}, sizeTx{size}, point{0.0f, 0.0f}
 {
     cord = get_uv_coords(sizeTx);
     ver = std::vector<float>(20, 0.0f);
     if (ver.size() == 20)
     {
         // vertecies
-        ver[0] = point.x;
-        ver[1] = point.y;
-        ver[5] = point.x + sizeTx.widht;
-        ver[6] = point.y;
-        ver[10] = point.x + sizeTx.widht;
-        ver[11] = point.y + sizeTx.height;
-        ver[15] = point.x;
-        ver[16] = point.y + sizeTx.height;
+        ver[0] = pt.x;
+        ver[1] = pt.y;
+        ver[5] = pt.x + sizeTx.widht;
+        ver[6] = pt.y;
+        ver[10] = pt.x + sizeTx.widht;
+        ver[11] = pt.y + sizeTx.height;
+        ver[15] = pt.x;
+        ver[16] = pt.y + sizeTx.height;
         // tex coord
         ver[3] = cord.min_u;
         ver[4] = cord.min_v;
@@ -80,7 +103,9 @@ Objects::DecorObj::DecorObj(const DecorObj &right)
     cam = right.cam;
     shProg = right.shProg;
     tex = right.tex;
+    sizeTx = right.sizeTx;
     cord = right.cord;
+    point = right.point;
     ver = right.ver;
     ids = right.ids;
     vbo = Render::VertexBuffArr{};
@@ -105,6 +130,8 @@ Objects::DecorObj::DecorObj(DecorObj &&right) noexcept
     shProg = right.shProg;
     tex = right.tex;
     cord = right.cord;
+    sizeTx = right.sizeTx;
+    point = right.point;
     ver = right.ver;
     ids = right.ids;
     vbo = std::move(right.vbo);
@@ -134,13 +161,15 @@ void Objects::DecorObj::init()
     shProg->setInt("tex", 0);
 }
 
-void Objects::DecorObj::update()
+void Objects::DecorObj::update(glm::vec2 mousePos, GLFWwindow *window)
 {
     shProg->usage();
     tex->bind();
+    set_new_point(mousePos, window);
     shProg->setMat4("projection", cam->get_proj_matrix());
     shProg->setMat4("view", cam->get_view_matrix());
-    shProg->setMat4("model", glm::mat4(1.0f));
+    shProg->setMat4("model", glm::translate(glm::mat4(1.0f), glm::vec3(point, 0.0f)));
+    vbo.update_data(ver.data(), sizeof(float) * ver.size());
 }
 
 void Objects::DecorObj::render()

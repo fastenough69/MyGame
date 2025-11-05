@@ -5,6 +5,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -18,10 +21,12 @@
 float window_SizeX = 800;
 float window_SizeY = 600;
 
-int rand_float(int range)
+int rand_(int min, int max)
 {
-    int res = rand() % range;
-    return res;
+    std::random_device rd;  // non-deterministic generator
+    std::mt19937 gen(rd()); // to seed mersenne twister.
+    std::uniform_int_distribution<> dist(min, max);
+    return dist(gen);
 }
 
 static void WindowSizeCallback(GLFWwindow *pt_w, int widht, int heigth)
@@ -139,15 +144,36 @@ int main(int argc, char **argv)
         bg.add_layer("sec", 0.5f, bg_tex2);
         bg.add_layer("thrid", 1.0f, bg_tex3);
 
-        std::vector<Objects::DecorObj> objs{static_cast<unsigned int>(worldWidth / 71) + 1,
-                                            {camera, shProgramBg, tailset,
-                                             Objects::SizeTexture{120.0f, 169.0f, 71.0f, 23.0f, 504.0f, 360.0f},
-                                             glm::vec2(0.0f, 23.0f), std::vector<unsigned int>{0, 1, 2, 2, 3, 0}}};
-        auto vertecies = Objects::new_coords(objs[0].get_vertecies(), static_cast<unsigned int>(worldWidth / 71) + 1);
-        for (int i{}; i < objs.size(); i++)
+        Objects::DecorObj first{camera,
+                                shProgramBg,
+                                tailset,
+                                Objects::SizeTexture{120.0f, 169.0f, 71.0f, 23.0f, 504.0f, 360.0f},
+                                glm::vec2(0.0f, 23.0f),
+                                std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
+
+        Objects::DecorObj sec{camera,
+                              shProgramBg,
+                              tailset,
+                              Objects::SizeTexture{120.0f, 121.0f, 71.0f, 23.0f, 504.0f, 360.0f},
+                              glm::vec2(0.0f, 23.0f),
+                              std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
+
+        std::map<int, Objects::DecorObj> tailmap = {{1, first}, {2, sec}};
+        std::vector<Objects::DecorObj> floor;
+        for (int i{}; i < static_cast<unsigned int>(worldWidth / 71) + 1; i++)
         {
-            objs[i].set_vertecies(vertecies[i]);
-            objs[i].init();
+            int num = rand_(1, 2);
+            floor.push_back(tailmap[num]);
+        }
+        for (int i = 1; i < static_cast<unsigned int>(worldWidth / 71) + 1; i++)
+        {
+            std::vector<float> &prev = floor[i - 1].get_vertecies(), &curr = floor[i].get_vertecies();
+            Objects::set_new_coord(prev, curr, floor[i - 1].get_szTexture().widht);
+            floor[i].set_vertecies(curr);
+        }
+        for (int i{}; i < static_cast<unsigned int>(worldWidth / 71) + 1; i++)
+        {
+            floor[i].init();
         }
 
         std::vector<Objects::DecorObj> dirt{static_cast<unsigned int>(worldWidth / 71) + 1,
@@ -160,18 +186,31 @@ int main(int argc, char **argv)
             dirt[i].set_vertecies(ver_dirts[i]);
             dirt[i].init();
         }
-        srand(time((time_t*)0));
-        int x = rand_float(2000);
-        std::cout << x << std::endl;
+
         Objects::DecorObj ramp{camera,
                                shProgramBg,
                                tailset,
                                Objects::SizeTexture{0.0f, 193.0f, 95.0f, 47.0f, 504.0f, 360.0f},
-                               glm::vec2(x, 23.0f),
+                               glm::vec2(1500.0f, 47.0f),
                                std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
         ramp.init();
 
-        // glfwSetWindowUserPointer(pt_window, main_hero.get());
+        Objects::DecorObj platform{camera,
+                                   shProgramBg,
+                                   tailset,
+                                   Objects::SizeTexture{0.0f, 264.0f, 96.0f, 96.0f, 504.0f, 360.0f},
+                                   glm::vec2(1650.0f, 0.0f),
+                                   std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
+        platform.init();
+
+        Objects::DecorObj bl_sq{camera,
+                                shProgramBg,
+                                tailset,
+                                Objects::SizeTexture{120.0f, 336.0f, 96.0f, 24.0f, 504.0f, 360.0f},
+                                glm::vec2(1630.0f, 47.0f),
+                                std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
+        bl_sq.init();
+
         glfwSetKeyCallback(pt_window, RightKeyCallback);
 
         float lastTime = 0;
@@ -186,6 +225,10 @@ int main(int argc, char **argv)
             float currTime = glfwGetTime();
             float deltaTime = currTime - lastTime;
             lastTime = currTime;
+
+            double x, y;
+            glfwGetCursorPos(pt_window, &x, &y);
+            glm::vec2 mousePos{x, window_SizeY - y};
 
             if (glfwGetKey(pt_window, GLFW_KEY_D) == GLFW_PRESS)
             {
@@ -212,27 +255,31 @@ int main(int argc, char **argv)
             bg.update("thrid");
             bg.render();
 
-            for (int i{}; i < objs.size(); i++)
+            platform.update(mousePos, pt_window);
+            platform.render();
+
+            bl_sq.update(mousePos, pt_window);
+            bl_sq.render();
+
+            for (int i{}; i < floor.size(); i++)
             {
-                objs[i].update();
-                objs[i].render();
+                floor[i].update(mousePos, pt_window);
+                floor[i].render();
             }
             for (int i{}; i < dirt.size(); i++)
             {
-                dirt[i].update();
+                dirt[i].update(mousePos, pt_window);
                 dirt[i].render();
             }
-            ramp.update();
+            ramp.update(mousePos, pt_window);
             ramp.render();
 
-             if (frame++ % 360 == 0)
+            if (frame++ % 360 == 0)
             {
-                 /*std::cout << pos.x << ' ' << pos.y << std::endl;
-                 std::cout << frame / glfwGetTime() << std::endl;*/
-                 double x, y;
-                 glfwGetCursorPos(pt_window, &x, &y);
-                 std::cout << x << ' ' << y << std::endl;
-             }
+                /*std::cout << pos.x << ' ' << pos.y << std::endl;
+                std::cout << frame / glfwGetTime() << std::endl;*/
+                std::cout << x << ' ' << worldHeight - y << std::endl;
+            }
 
             /* Swap front and back buffers */
             glfwSwapBuffers(pt_window);

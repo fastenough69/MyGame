@@ -49,7 +49,7 @@ class BackgroundParalax
     BackgroundParalax(std::shared_ptr<Camera::Camera2D> cm, std::shared_ptr<Render::ProgramShader> prog,
                       std::vector<float> &&vr, std::vector<unsigned int> &&indices);
 
-    void add_layer(const std::string &name, float&& offsetParalax, std::shared_ptr<Render::Texture2D> tex);
+    void add_layer(const std::string &name, float &&offsetParalax, std::shared_ptr<Render::Texture2D> tex);
     void init();
     void update(const std::string &name);
     void render();

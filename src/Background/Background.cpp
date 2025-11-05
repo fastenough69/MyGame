@@ -24,12 +24,12 @@ Objects::BackgroundParalax::BackgroundParalax(std::shared_ptr<Camera::Camera2D> 
     vao = Render::VertexArr{};
 }
 
-void Objects::BackgroundParalax::add_layer(const std::string &name, float&& offsetParalax,
+void Objects::BackgroundParalax::add_layer(const std::string &name, float &&offsetParalax,
                                            std::shared_ptr<Render::Texture2D> tex)
 {
     if (bg_map.count(name) == 0)
     {
-        BackroundLayer lay{ offsetParalax };
+        BackroundLayer lay{offsetParalax};
         bg_map[name] = {lay, tex};
     }
 }

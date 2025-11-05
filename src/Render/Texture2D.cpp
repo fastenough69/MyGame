@@ -19,6 +19,7 @@ Texture2D::Texture2D(const GLuint width, const GLuint height, unsigned char *dat
         break;
     }
     glGenTextures(1, &t_id);
+    glGenTextures(1, &t_id);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, t_id);
     glTexImage2D(GL_TEXTURE_2D, 0, t_mode, width, height, 0, t_mode, GL_UNSIGNED_BYTE, data);

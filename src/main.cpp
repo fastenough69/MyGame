@@ -18,8 +18,14 @@
 #include "Render/Texture2D.h"
 #include "Resources/Resources.h"
 
-static float window_SizeX = 320;
-static float window_SizeY = 240;
+static float window_SizeX = 800;
+static float window_SizeY = 600;
+
+glm::vec3 getWorldPosCursor(glm::vec3 mousePos, std::shared_ptr<Camera::Camera2D> cam)
+{
+    glm::vec4 viewPort{0, 0, window_SizeX, window_SizeY};
+    return glm::unProject(mousePos, cam->get_view_matrix(), cam->get_proj_matrix(), viewPort);
+}
 
 int rand_(int min, int max)
 {
@@ -76,7 +82,7 @@ int main(int argc, char **argv)
     /* Make the window's context current */
     glfwMakeContextCurrent(pt_window);
 
-    glfwSwapInterval(0);
+    // glfwSwapInterval(0);
 
     if (!gladLoadGL())
     {
@@ -92,8 +98,6 @@ int main(int argc, char **argv)
 
     {
         ResourceManager *mn = ResourceManager::getInstance(argv[0]);
-        /*auto shProgramHero = mn->loadShaderPr("DefaultShaders", "res/shaders/ObjectsShaders/vShader.txt",
-                                              "res/shaders/ObjectsShaders/fShader.txt");*/
         auto shProgramBg =
             mn->loadShaderPr("ShaderBg", "res/shaders/BgShaders/vShader.txt", "res/shaders/BgShaders/fShader.txt");
 
@@ -191,7 +195,7 @@ int main(int argc, char **argv)
                                shProgramBg,
                                tailset,
                                Objects::SizeTexture{0.0f, 193.0f, 95.0f, 47.0f, 504.0f, 360.0f},
-                               glm::vec2(0.0f, 47.0f),
+                               glm::vec2(725.0f, 47.0f),
                                std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
         ramp.init();
 
@@ -228,20 +232,26 @@ int main(int argc, char **argv)
 
             double x, y;
             glfwGetCursorPos(pt_window, &x, &y);
-            x = (x / window_SizeX) * worldWidth;
+            glm::vec3 mousePos{static_cast<float>(x), static_cast<float>(worldHeight - y), 0.0f};
+            mousePos = getWorldPosCursor(mousePos, camera);
 
             if (glfwGetKey(pt_window, GLFW_KEY_D) == GLFW_PRESS)
             {
-                pos.x += 300.0f * deltaTime;
+                pos.x += 550.0f * deltaTime;
                 if (pos.x >= worldWidth)
                     pos.x = worldWidth;
             }
 
             if (glfwGetKey(pt_window, GLFW_KEY_A) == GLFW_PRESS)
             {
-                pos.x -= 300.0f * deltaTime;
+                pos.x -= 550.0f * deltaTime;
                 if (pos.x <= 0.0f)
                     pos.x = 0.0f;
+            }
+
+            if (glfwGetKey(pt_window, GLFW_KEY_W) == GLFW_PRESS)
+            {
+                pos.y += 550 * deltaTime;
             }
 
             camera->folow_target(pos, worldWidth, worldHeight);
@@ -271,14 +281,17 @@ int main(int argc, char **argv)
                 dirt[i].update();
                 dirt[i].render();
             }
-            /*ramp.update();
-            ramp.render();*/
+            ramp.update();
+            ramp.render();
 
-            if (frame++ % 360 == 0)
+             if (frame++ % 360 == 0)
             {
-                //std::cout << pos.x << ' ' << pos.y << std::endl;
-                // std::cout << frame / glfwGetTime() << std::endl;
-                std::cout << x << ' ' << worldHeight - y << std::endl;
+                //system("cls");
+                std::cout << "\033[2J\033[1;1H";
+                std::cout << "World Pos: " << mousePos.x << ' ' << mousePos.y << std::endl;
+                std::cout << "Target pos: " << pos.x << ' ' << pos.y << std::endl;
+                std::cout << "FPS: " << frame / glfwGetTime();
+                frame++;
             }
 
             /* Swap front and back buffers */

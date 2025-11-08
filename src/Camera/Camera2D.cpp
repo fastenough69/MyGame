@@ -20,5 +20,5 @@ glm::mat4 Camera::Camera2D::get_view_matrix() const
 
 glm::mat4 Camera::Camera2D::get_proj_matrix() const
 {
-    return glm::ortho(0.0f, size.x / 2.0f, 0.0f, size.y, -10.0f, 10.0f);
+    return glm::ortho(0.0f, size.x, 0.0f, size.y / 1.5f, -1.0f, 1.0f);
 }

@@ -13,6 +13,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+//#include <rapidjson/document.h>
 
 namespace Objects
 {

@@ -28,6 +28,7 @@ std::string ResourceManager::getFileStr(const std::string filePath) const
 
     std::stringstream buff;
     buff << f.rdbuf();
+    f.close();
     return buff.str();
 }
 

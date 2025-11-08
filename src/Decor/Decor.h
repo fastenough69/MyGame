@@ -47,8 +47,10 @@ class DecorObj
     Render::VertexBuffArr vbo{};
     Render::IndexBuff emo{};
     Render::VertexArr vao{};
+
     void swap(DecorObj copy);
     void set_new_point(glm::vec2 mousePos, GLFWwindow *window);
+    void set_newVertecies(float width, float height);
 
   public:
     DecorObj() = default;
@@ -63,7 +65,10 @@ class DecorObj
     void init();
     void update();
     void render();
-    void set_vertecies(std::vector<float> &new_ver);
+    inline void set_vertecies(std::vector<float>& new_ver)
+    {
+        ver = new_ver;
+    }
     std::vector<float> get_vertecies() const;
     void set_uvCord(SizeTexture &&size);
     SizeTexture get_szTexture() const;

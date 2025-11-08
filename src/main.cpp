@@ -18,8 +18,8 @@
 #include "Render/Texture2D.h"
 #include "Resources/Resources.h"
 
-float window_SizeX = 800;
-float window_SizeY = 600;
+static float window_SizeX = 320;
+static float window_SizeY = 240;
 
 int rand_(int min, int max)
 {
@@ -111,10 +111,10 @@ int main(int argc, char **argv)
 
         auto tailset = mn->loadTexture("TailSet1", "res/textures/oak_woods_tileset.png");
 
-        float worldWidth = 3000.0f;
+        float worldWidth = 2000.0f;
         float worldHeight = (float)window_SizeY;
 
-        float bgRepeatCount = 6.0f;
+        float bgRepeatCount = 8.0f;
         std::vector<float> vecbg{0.0f,
                                  0.0f,
                                  0.0f,
@@ -144,30 +144,30 @@ int main(int argc, char **argv)
         bg.add_layer("sec", 0.5f, bg_tex2);
         bg.add_layer("thrid", 1.0f, bg_tex3);
 
-        Objects::DecorObj first{camera,
-                                shProgramBg,
-                                tailset,
-                                Objects::SizeTexture{120.0f, 169.0f, 71.0f, 23.0f, 504.0f, 360.0f},
-                                glm::vec2(0.0f, 23.0f),
-                                std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
+        Objects::DecorObj first_floor{camera,
+                                      shProgramBg,
+                                      tailset,
+                                      Objects::SizeTexture{120.0f, 169.0f, 71.0f, 23.0f, 504.0f, 360.0f},
+                                      glm::vec2(0.0f, 23.0f),
+                                      std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
 
-        Objects::DecorObj sec{camera,
-                              shProgramBg,
-                              tailset,
-                              Objects::SizeTexture{120.0f, 121.0f, 71.0f, 23.0f, 504.0f, 360.0f},
-                              glm::vec2(0.0f, 23.0f),
-                              std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
+        Objects::DecorObj sec_floor{camera,
+                                    shProgramBg,
+                                    tailset,
+                                    Objects::SizeTexture{120.0f, 121.0f, 71.0f, 23.0f, 504.0f, 360.0f},
+                                    glm::vec2(0.0f, 23.0f),
+                                    std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
 
-        std::map<int, Objects::DecorObj> tailmap = {{1, first}, {2, sec}};
+        std::map<int, Objects::DecorObj> tailmap_floor = {{1, first_floor}, {2, sec_floor}};
         std::vector<Objects::DecorObj> floor;
         for (int i{}; i < static_cast<unsigned int>(worldWidth / 71) + 1; i++)
         {
             int num = rand_(1, 2);
-            floor.push_back(tailmap[num]);
+            floor.push_back(tailmap_floor[num]);
         }
         for (int i = 1; i < static_cast<unsigned int>(worldWidth / 71) + 1; i++)
         {
-            std::vector<float> &prev = floor[i - 1].get_vertecies(), &curr = floor[i].get_vertecies();
+            std::vector<float> prev = floor[i - 1].get_vertecies(), curr = floor[i].get_vertecies();
             Objects::set_new_coord(prev, curr, floor[i - 1].get_szTexture().widht);
             floor[i].set_vertecies(curr);
         }
@@ -191,7 +191,7 @@ int main(int argc, char **argv)
                                shProgramBg,
                                tailset,
                                Objects::SizeTexture{0.0f, 193.0f, 95.0f, 47.0f, 504.0f, 360.0f},
-                               glm::vec2(1500.0f, 47.0f),
+                               glm::vec2(0.0f, 47.0f),
                                std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
         ramp.init();
 
@@ -199,7 +199,7 @@ int main(int argc, char **argv)
                                    shProgramBg,
                                    tailset,
                                    Objects::SizeTexture{0.0f, 264.0f, 96.0f, 96.0f, 504.0f, 360.0f},
-                                   glm::vec2(1650.0f, 0.0f),
+                                   glm::vec2(650.0f, 0.0f),
                                    std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
         platform.init();
 
@@ -207,7 +207,7 @@ int main(int argc, char **argv)
                                 shProgramBg,
                                 tailset,
                                 Objects::SizeTexture{120.0f, 336.0f, 96.0f, 24.0f, 504.0f, 360.0f},
-                                glm::vec2(1630.0f, 47.0f),
+                                glm::vec2(630.0f, 46.0f),
                                 std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
         bl_sq.init();
 
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
 
         float lastTime = 0;
         int frame = 0;
-        glm::vec2 pos{800.0f, 0.0f};
+        glm::vec2 pos{0.0f, 0.0f};
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(pt_window))
         {
@@ -228,20 +228,20 @@ int main(int argc, char **argv)
 
             double x, y;
             glfwGetCursorPos(pt_window, &x, &y);
-            glm::vec2 mousePos{x, window_SizeY - y};
+            x = (x / window_SizeX) * worldWidth;
 
             if (glfwGetKey(pt_window, GLFW_KEY_D) == GLFW_PRESS)
             {
-                pos.x += 500.0f * deltaTime;
-                if (pos.x >= worldWidth - 800)
-                    pos.x = worldWidth - 800;
+                pos.x += 300.0f * deltaTime;
+                if (pos.x >= worldWidth)
+                    pos.x = worldWidth;
             }
 
             if (glfwGetKey(pt_window, GLFW_KEY_A) == GLFW_PRESS)
             {
-                pos.x -= 500.0f * deltaTime;
-                if (pos.x <= 800)
-                    pos.x = 800;
+                pos.x -= 300.0f * deltaTime;
+                if (pos.x <= 0.0f)
+                    pos.x = 0.0f;
             }
 
             camera->folow_target(pos, worldWidth, worldHeight);
@@ -255,29 +255,29 @@ int main(int argc, char **argv)
             bg.update("thrid");
             bg.render();
 
-            platform.update(mousePos, pt_window);
+            platform.update();
             platform.render();
 
-            bl_sq.update(mousePos, pt_window);
+            bl_sq.update();
             bl_sq.render();
 
             for (int i{}; i < floor.size(); i++)
             {
-                floor[i].update(mousePos, pt_window);
+                floor[i].update();
                 floor[i].render();
             }
             for (int i{}; i < dirt.size(); i++)
             {
-                dirt[i].update(mousePos, pt_window);
+                dirt[i].update();
                 dirt[i].render();
             }
-            ramp.update(mousePos, pt_window);
-            ramp.render();
+            /*ramp.update();
+            ramp.render();*/
 
             if (frame++ % 360 == 0)
             {
-                /*std::cout << pos.x << ' ' << pos.y << std::endl;
-                std::cout << frame / glfwGetTime() << std::endl;*/
+                //std::cout << pos.x << ' ' << pos.y << std::endl;
+                // std::cout << frame / glfwGetTime() << std::endl;
                 std::cout << x << ' ' << worldHeight - y << std::endl;
             }
 

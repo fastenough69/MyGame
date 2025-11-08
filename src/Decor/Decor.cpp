@@ -63,22 +63,34 @@ void Objects::DecorObj::set_new_point(glm::vec2 mousePos, GLFWwindow *window)
 
 Objects::DecorObj::DecorObj(std::shared_ptr<Camera::Camera2D> cm, std::shared_ptr<Render::ProgramShader> prog,
                             std::shared_ptr<Render::Texture2D> tx, SizeTexture &&size, glm::vec2 &&pt,
-                            std::vector<unsigned int> &&indices)
-    : cam{cm}, shProg{prog}, tex{tx}, ids{indices}, sizeTx{size}, point{0.0f, 0.0f}
+                            std::vector<unsigned int> &&indices, glm::vec2 size_draw)
+    : cam{cm}, shProg{prog}, tex{tx}, ids{indices}, sizeTx{size}, point{pt}
 {
     cord = get_uv_coords(sizeTx);
     ver = std::vector<float>(20, 0.0f);
+    float widht = 0, height = 0;
+    if (size_draw.x != 0 && size_draw.y != 0)
+    {
+        widht = size_draw.x;
+        height = size_draw.y;
+    }
+    else
+    {
+        widht = sizeTx.widht;
+        height = sizeTx.height;
+    }
+
     if (ver.size() == 20)
     {
         // vertecies
-        ver[0] = pt.x;
-        ver[1] = pt.y;
-        ver[5] = pt.x + sizeTx.widht;
-        ver[6] = pt.y;
-        ver[10] = pt.x + sizeTx.widht;
-        ver[11] = pt.y + sizeTx.height;
-        ver[15] = pt.x;
-        ver[16] = pt.y + sizeTx.height;
+        ver[0] = point.x;
+        ver[1] = point.y;
+        ver[5] = point.x + widht;
+        ver[6] = point.y;
+        ver[10] = point.x + widht;
+        ver[11] = point.y + height;
+        ver[15] = point.x;
+        ver[16] = point.y + height;
         // tex coord
         ver[3] = cord.min_u;
         ver[4] = cord.min_v;
@@ -137,9 +149,10 @@ Objects::DecorObj::DecorObj(DecorObj &&right) noexcept
     vbo = std::move(right.vbo);
     emo = std::move(right.emo);
     vao = std::move(right.vao);
-    right.cam = nullptr;
-    right.shProg = nullptr;
-    right.tex = nullptr;
+    // right.cam = nullptr;
+    right.cam.reset();
+    right.shProg.reset();
+    right.tex.reset();
 }
 
 Objects::DecorObj &Objects::DecorObj::operator=(DecorObj &&right) noexcept
@@ -161,14 +174,14 @@ void Objects::DecorObj::init()
     shProg->setInt("tex", 0);
 }
 
-void Objects::DecorObj::update(glm::vec2 mousePos, GLFWwindow *window)
+void Objects::DecorObj::update()
 {
     shProg->usage();
     tex->bind();
-    set_new_point(mousePos, window);
+    // set_new_point(mousePos, window);
     shProg->setMat4("projection", cam->get_proj_matrix());
     shProg->setMat4("view", cam->get_view_matrix());
-    shProg->setMat4("model", glm::translate(glm::mat4(1.0f), glm::vec3(point, 0.0f)));
+    shProg->setMat4("model", glm::mat4(1.0f));
     vbo.update_data(ver.data(), sizeof(float) * ver.size());
 }
 

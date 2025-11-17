@@ -93,7 +93,6 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture(const std::strin
     }
 
     auto currTexture = std::make_shared<Render::Texture2D>(widht, height, data, chanels, GL_NEAREST);
-    // currTexture->clear_alpha_chanel(data, widht, height);
     if (t_map.count(texName) == 0)
     {
         t_map.emplace(texName, currTexture);
@@ -111,4 +110,93 @@ std::shared_ptr<Render::Texture2D> ResourceManager::getTexture(const std::string
         return nullptr;
     }
     return t_map[texName];
+}
+
+std::pair<ResourceManager::TileInfo, std::shared_ptr<Render::Texture2D>> ResourceManager::loadTileset(
+    const std::string &tmxFilePath, const std::string &nameTs)
+{
+    tmx::Map map;
+    if (!map.load(e_path + '/' + tmxFilePath))
+    {
+        return {};
+    }
+    const auto &tileset = map.getTilesets()[0];
+    const auto &sizeTile = map.getTileSize().x;
+    tmx::Vector2u sizeTex = tileset.getImageSize();
+    TileInfo temp;
+    const auto &tiles = tileset.getTiles();
+
+    for (int y{}; y < (sizeTex.y / sizeTile); y++)
+    {
+        for (int x{}; x < (sizeTex.x / sizeTile); x++)
+        {
+            temp.emplace(tiles[y * (sizeTex.x / sizeTile) + x].ID + tileset.getFirstGID(),
+                         Objects::TileSize{(float)(x * sizeTile), (sizeTex.y - sizeTile) - (float)(y * sizeTile),
+                                           (float)sizeTile, (float)sizeTile, (float)(sizeTex.x), (float)(sizeTex.y)});
+        }
+    }
+
+    std::string tex_path = tileset.getImagePath();
+    size_t count = tex_path.find("res/");
+    tex_path = tex_path.substr(count, tex_path.size());
+
+    auto tex = loadTexture(nameTs, tex_path);
+    std::pair<TileInfo, std::shared_ptr<Render::Texture2D>> pair = {temp, tex};
+    if (ts_map.count(nameTs) == 0)
+    {
+        ts_map.emplace(nameTs, pair);
+    }
+    return pair;
+}
+
+void ResourceManager::tileMapProcessing(const std::string &tmxPath, const std::string &nameLvl)
+{
+    tmx::Map map;
+    if (!map.load(e_path + '/' + tmxPath))
+    {
+        return;
+    }
+    if (level_map.count(nameLvl) != 0)
+    {
+        return;
+    }
+    const auto &layers = map.getLayers();
+    tmx::Vector2u sizeMap = map.getTileCount();
+    const auto &tailset = loadTileset(tmxPath, "ts1");
+    auto tex = tailset.second;
+    auto info = tailset.first;
+    std::vector<TilesCord> temp;
+
+    for (const auto &layer : layers)
+    {
+        const auto &tiles = layer->getLayerAs<tmx::TileLayer>().getTiles();
+        for (int y{}; y < sizeMap.y; y++)
+        {
+            for (int x{}; x < sizeMap.x; x++)
+            {
+                auto tileId = tiles[y * sizeMap.x + x].ID;
+                if (tileId != 0)
+                {
+                    Objects::uvCoords uvcrd = Objects::get_uv_coords(info[tileId]);
+                    temp.push_back(TilesCord{tmx::Vector2f((float)x, (float)y), uvcrd, tex});
+
+                    std::cout << uvcrd.min_u << ' ' << uvcrd.max_u << std::endl
+                              << uvcrd.min_v << ' ' << uvcrd.max_v << std::endl;
+                    std::cout << "Map coords: " << x << ' ' << y;
+                    std::cout << std::endl;
+                }
+            }
+        }
+    }
+    level_map.emplace(nameLvl, temp);
+}
+
+Objects::uvCoords Objects::get_uv_coords(const TileSize &size)
+{
+    uvCoords result{};
+    result.min_u = size.x / size.fullWidht;
+    result.min_v = size.y / size.fullHeight;
+    result.max_u = (size.x + size.widht) / size.fullWidht;
+    result.max_v = (size.y + size.height) / size.fullHeight;
+    return result;
 }

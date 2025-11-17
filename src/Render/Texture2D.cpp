@@ -81,29 +81,4 @@ void Texture2D::unbind()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
-
-void Texture2D::clear_alpha_chanel(unsigned char *data, int width, int height)
-{
-    int min_x = width, max_x = 0, min_y = height, max_y = 0;
-
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            unsigned char *pixels = data + (y * width + x) * 4;
-            if (pixels[3] > 50)
-            {
-                if (min_x > x)
-                    min_x = x;
-                if (max_x < x)
-                    max_x = x;
-                if (min_y > y)
-                    min_y = y;
-                if (max_y < y)
-                    max_y = y;
-            }
-        }
-    }
-    cords = {(float)min_x / width, (float)max_x / width, (float)min_y / height, (float)max_y / height};
-}
 } // namespace Render

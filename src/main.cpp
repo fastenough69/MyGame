@@ -5,10 +5,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <tmxlite/Layer.hpp>
-#include <tmxlite/Map.hpp>
-#include <tmxlite/TileLayer.hpp>
-
 #include <iostream>
 #include <map>
 #include <memory>
@@ -22,39 +18,15 @@
 #include "Render/Texture2D.h"
 #include "Resources/Resources.h"
 
-static float window_SizeX = 1280;
-static float window_SizeY = 960;
-
-namespace Objects {
-    struct uvCoords
-    {
-        float min_u, max_u;
-        float min_v, max_v;
-    };
-
-    struct SizeTexture
-    {
-        float x, y;
-        float widht, height;
-        float fullWidht, fullHeight;
-    };
-    uvCoords get_uv_coords(const SizeTexture& size)
-    {
-        uvCoords result{};
-        result.min_u = size.x / size.fullWidht;
-        result.min_v = size.y / size.fullHeight;
-        result.max_u = (size.x + size.widht) / size.fullWidht;
-        result.max_v = (size.y + size.height) / size.fullHeight;
-        return result;
-    }
-}
+static float window_SizeX = 720;
+static float window_SizeY = 480;
 
 void init_tiles()
 {
     tmx::Map map;
     try
     {
-        map.load("C:/Users/lisen/Desktop/MyGame/res/resource/levels/1.tmx");
+        map.load("C:/Users/lisen/OneDrive/Рабочий стол/MyGame/res/resource/levels/1.tmx");
     }
     catch (std::exception &e)
     {
@@ -73,16 +45,15 @@ void init_tiles()
             const auto &sizeTex = tileset.getImageSize();
             auto &mapSize = map.getTileCount();
             std::cout << tileset.getFirstGID() << ' ' << tileset.getLastGID() << std::endl;
-            std::vector<Objects::SizeTexture> sizesTiles;
+            std::vector<Objects::TileSize> sizesTiles;
             for (int y{}; y < (sizeTex.y / sizeTile); y++)
             {
                 for (int x{}; x < (sizeTex.x / sizeTile); x++)
                 {
                     sizesTiles.push_back(
-                        Objects::SizeTexture{(float)(x * sizeTile), (sizeTex.y - sizeTile) - (float)(y * sizeTile),
-                                             (float)sizeTile, (float)sizeTile, (float)(sizeTex.x), (float)(sizeTex.y)});
+                        Objects::TileSize{(float)(x * sizeTile), (sizeTex.y - sizeTile) - (float)(y * sizeTile),
+                                          (float)sizeTile, (float)sizeTile, (float)(sizeTex.x), (float)(sizeTex.y)});
                     std::cout << tileset.getTiles()[y * (sizeTex.x / sizeTile) + x].ID << ' ';
-                    
                 }
             }
         }
@@ -116,11 +87,6 @@ static void RightKeyCallback(GLFWwindow *pt_w, int key, int scancode, int action
     {
         glfwSetWindowShouldClose(pt_w, GL_TRUE);
     }
-
-    /*Camera::Camera2D *obj = static_cast<Camera::Camera2D *>(glfwGetWindowUserPointer(pt_w));
-    if (obj)
-    {
-    }*/
 }
 
 int main(int argc, char **argv)
@@ -165,11 +131,11 @@ int main(int argc, char **argv)
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     {
-        init_tiles();
         ResourceManager *mn = ResourceManager::getInstance(argv[0]);
         auto shProgramBg =
             mn->loadShaderPr("ShaderBg", "res/shaders/BgShaders/vShader.txt", "res/shaders/BgShaders/fShader.txt");
-
+        // mn->loadTileset("res\\resource\\levels\\1.tmx", "ts");
+        mn->tileMapProcessing("res\\resource\\levels\\1.tmx", "ts");
         if (!shProgramBg)
         {
             std::cerr << "Cant create program shaders" << std::endl;
@@ -187,18 +153,19 @@ int main(int argc, char **argv)
         float worldWidth = 2000.0f;
         float worldHeight = (float)window_SizeY;
         float worldX = 60.0f, worldY = 20.0f;
+        float cameraX = 30;
         float bgRepeatCount = 8.0f;
         std::vector<float> vecbg{0.0f,
                                  0.0f,
                                  0.0f,
                                  0.0f,
                                  0.0f,
-                                 worldX* bgRepeatCount,
+                                 cameraX * bgRepeatCount,
                                  0.0f,
                                  0.0f,
                                  bgRepeatCount,
                                  0.0f,
-                                 worldX* bgRepeatCount,
+                                 cameraX * bgRepeatCount,
                                  worldY,
                                  0.0f,
                                  bgRepeatCount,
@@ -209,7 +176,7 @@ int main(int argc, char **argv)
                                  0.0f,
                                  1.0f};
 
-        std::shared_ptr<Camera::Camera2D> camera = std::make_shared<Camera::Camera2D>(30.0f, worldY);
+        std::shared_ptr<Camera::Camera2D> camera = std::make_shared<Camera::Camera2D>(cameraX, worldY);
         Objects::BackgroundParalax bg{camera, shProgramBg, std::move(vecbg),
                                       std::vector<unsigned int>{0, 1, 2, 2, 3, 0}};
         bg.init();
@@ -243,7 +210,7 @@ int main(int argc, char **argv)
                 if (pos.x >= worldX)
                     pos.x = worldX;
             }
-        
+
             if (glfwGetKey(pt_window, GLFW_KEY_A) == GLFW_PRESS)
             {
                 pos.x -= 10.0f * deltaTime;
@@ -269,12 +236,12 @@ int main(int argc, char **argv)
 
             if (frame++ % 360 == 0)
             {
-                std::cout << "\033[2J\033[1;1H";
-                std::cout << "World Pos: " << mousePos.x << ' ' << mousePos.y << std::endl;
-                std::cout << "Target pos: " << pos.x << ' ' << pos.y << std::endl;
-                std::cout << "Camera pos: " << camera->get_cam_pos().x << ' ' << camera->get_cam_pos().y << std::endl;
-                std::cout << "FPS: " << frame / glfwGetTime();
-                frame++;
+                /* std::cout << "\033[2J\033[1;1H";
+                 std::cout << "World Pos: " << mousePos.x << ' ' << mousePos.y << std::endl;
+                 std::cout << "Target pos: " << pos.x << ' ' << pos.y << std::endl;
+                 std::cout << "Camera pos: " << camera->get_cam_pos().x << ' ' << camera->get_cam_pos().y << std::endl;
+                 std::cout << "FPS: " << frame / glfwGetTime();
+                 frame++;*/
             }
 
             /* Swap front and back buffers */

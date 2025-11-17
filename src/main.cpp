@@ -16,49 +16,11 @@
 #include "Camera/Camera2D.h"
 #include "Render/Shaders.h"
 #include "Render/Texture2D.h"
+#include "Render/TileRender.h"
 #include "Resources/Resources.h"
 
 static float window_SizeX = 720;
 static float window_SizeY = 480;
-
-void init_tiles()
-{
-    tmx::Map map;
-    try
-    {
-        map.load("C:/Users/lisen/OneDrive/Рабочий стол/MyGame/res/resource/levels/1.tmx");
-    }
-    catch (std::exception &e)
-    {
-        std::cerr << e.what() << std::endl;
-        return;
-    }
-
-    const auto &layers = map.getLayers();
-    for (int i{}; i < layers.size(); i++)
-    {
-        if (layers[i]->getType() == tmx::Layer::Type::Tile)
-        {
-            const auto &tiles = layers[i]->getLayerAs<tmx::TileLayer>().getTiles();
-            const auto &tileset = map.getTilesets()[0];
-            const auto &sizeTile = map.getTileSize().x;
-            const auto &sizeTex = tileset.getImageSize();
-            auto &mapSize = map.getTileCount();
-            std::cout << tileset.getFirstGID() << ' ' << tileset.getLastGID() << std::endl;
-            std::vector<Objects::TileSize> sizesTiles;
-            for (int y{}; y < (sizeTex.y / sizeTile); y++)
-            {
-                for (int x{}; x < (sizeTex.x / sizeTile); x++)
-                {
-                    sizesTiles.push_back(
-                        Objects::TileSize{(float)(x * sizeTile), (sizeTex.y - sizeTile) - (float)(y * sizeTile),
-                                          (float)sizeTile, (float)sizeTile, (float)(sizeTex.x), (float)(sizeTex.y)});
-                    std::cout << tileset.getTiles()[y * (sizeTex.x / sizeTile) + x].ID << ' ';
-                }
-            }
-        }
-    }
-}
 
 glm::vec3 getWorldPosCursor(glm::vec3 mousePos, std::shared_ptr<Camera::Camera2D> cam)
 {
@@ -116,7 +78,7 @@ int main(int argc, char **argv)
     /* Make the window's context current */
     glfwMakeContextCurrent(pt_window);
 
-    // glfwSwapInterval(0);
+    glfwSwapInterval(0);
 
     if (!gladLoadGL())
     {
@@ -134,8 +96,8 @@ int main(int argc, char **argv)
         ResourceManager *mn = ResourceManager::getInstance(argv[0]);
         auto shProgramBg =
             mn->loadShaderPr("ShaderBg", "res/shaders/BgShaders/vShader.txt", "res/shaders/BgShaders/fShader.txt");
-        // mn->loadTileset("res\\resource\\levels\\1.tmx", "ts");
-        mn->tileMapProcessing("res\\resource\\levels\\1.tmx", "ts");
+        auto tiles = mn->tileMapProcessing("res\\resource\\levels\\1.tmx", "Level1");
+
         if (!shProgramBg)
         {
             std::cerr << "Cant create program shaders" << std::endl;
@@ -148,10 +110,6 @@ int main(int argc, char **argv)
         auto bg_tex2 = mn->loadTexture("Bg_tex1", "res/textures/background_layer_2.png");
         auto bg_tex3 = mn->loadTexture("Bg_tex2", "res/textures/background_layer_3.png");
 
-        auto tailset = mn->loadTexture("TailSet1", "res/textures/oak_woods_tileset.png");
-
-        float worldWidth = 2000.0f;
-        float worldHeight = (float)window_SizeY;
         float worldX = 60.0f, worldY = 20.0f;
         float cameraX = 30;
         float bgRepeatCount = 8.0f;
@@ -186,6 +144,9 @@ int main(int argc, char **argv)
 
         glfwSetKeyCallback(pt_window, RightKeyCallback);
 
+        Render::TileRender tl_r(camera, shProgramBg, tiles.second, tiles.first);
+        tl_r.init();
+
         float lastTime = 0;
         int frame = 0;
         glm::vec2 pos{0.0f, 0.0f};
@@ -201,7 +162,7 @@ int main(int argc, char **argv)
 
             double x, y;
             glfwGetCursorPos(pt_window, &x, &y);
-            glm::vec3 mousePos{static_cast<float>(x), static_cast<float>(worldHeight - y), 0.0f};
+            glm::vec3 mousePos{static_cast<float>(x), static_cast<float>(window_SizeY - y), 0.0f};
             mousePos = getWorldPosCursor(mousePos, camera);
 
             if (glfwGetKey(pt_window, GLFW_KEY_D) == GLFW_PRESS)
@@ -223,7 +184,7 @@ int main(int argc, char **argv)
                 pos.y += 550 * deltaTime;
             }
 
-            camera->folow_target(pos, worldWidth, worldHeight);
+            camera->folow_target(pos, worldX, worldY);
 
             bg.update("first");
             bg.render();
@@ -234,14 +195,17 @@ int main(int argc, char **argv)
             bg.update("thrid");
             bg.render();
 
+            tl_r.update();
+            tl_r.draw();
+
             if (frame++ % 360 == 0)
             {
-                /* std::cout << "\033[2J\033[1;1H";
-                 std::cout << "World Pos: " << mousePos.x << ' ' << mousePos.y << std::endl;
-                 std::cout << "Target pos: " << pos.x << ' ' << pos.y << std::endl;
-                 std::cout << "Camera pos: " << camera->get_cam_pos().x << ' ' << camera->get_cam_pos().y << std::endl;
-                 std::cout << "FPS: " << frame / glfwGetTime();
-                 frame++;*/
+                std::cout << "\033[2J\033[1;1H";
+                std::cout << "World Pos: " << mousePos.x << ' ' << mousePos.y << std::endl;
+                std::cout << "Target pos: " << pos.x << ' ' << pos.y << std::endl;
+                std::cout << "Camera pos: " << camera->get_cam_pos().x << ' ' << camera->get_cam_pos().y << std::endl;
+                std::cout << "FPS: " << frame / glfwGetTime();
+                frame++;
             }
 
             /* Swap front and back buffers */

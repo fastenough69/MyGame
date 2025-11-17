@@ -32,20 +32,19 @@ struct TileSize
 uvCoords get_uv_coords(const TileSize &size);
 } // namespace Objects
 
+struct TilesCord
+{
+    tmx::Vector2f point;
+    Objects::uvCoords tex_cords;
+};
+
 class ResourceManager
 {
-    struct TilesCord
-    {
-        tmx::Vector2f point;
-        Objects::uvCoords tex_cords;
-        std::shared_ptr<Render::Texture2D> tex;
-    };
-
     using shaderProgMap = std::map<std::string, std::shared_ptr<Render::ProgramShader>>;
     using textureMap = std::map<std::string, std::shared_ptr<Render::Texture2D>>;
     using TileInfo = std::map<unsigned int, Objects::TileSize>;
     using Tailsets = std::map<std::string, std::pair<TileInfo, std::shared_ptr<Render::Texture2D>>>;
-    using Levels = std::map<std::string, std::vector<TilesCord>>;
+    using Levels = std::map<std::string, std::pair<std::vector<TilesCord>, std::shared_ptr<Render::Texture2D>>>;
 
     shaderProgMap sh_map;
     textureMap t_map;
@@ -71,8 +70,8 @@ class ResourceManager
     std::shared_ptr<Render::Texture2D> loadTexture(const std::string &texName, const std::string &texPath);
     std::shared_ptr<Render::Texture2D> getTexture(const std::string &texName);
 
-    std::pair<TileInfo, std::shared_ptr<Render::Texture2D>> loadTileset(const std::string &tmxFileName,
-                                                                        const std::string &name);
+    std::pair<TileInfo, std::shared_ptr<Render::Texture2D>> loadTileset(tmx::Map &map, const std::string &name);
 
-    void tileMapProcessing(const std::string &tmxPath, const std::string &nameLvl);
+    std::pair<std::vector<TilesCord>, std::shared_ptr<Render::Texture2D>> tileMapProcessing(const std::string &tmxPath,
+                                                                                            const std::string &nameLvl);
 };

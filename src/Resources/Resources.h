@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <algorithm>
 
 #include <tmxlite/Layer.hpp>
 #include <tmxlite/Map.hpp>
@@ -15,7 +16,7 @@ class ProgramShader;
 class Texture2D;
 } // namespace Render
 
-namespace Objects
+namespace TileProc
 {
 struct uvCoords
 {
@@ -29,22 +30,23 @@ struct TileSize
     float widht, height;
     float fullWidht, fullHeight;
 };
-uvCoords get_uv_coords(const TileSize &size);
-} // namespace Objects
-
 struct TilesCord
 {
     tmx::Vector2f point;
-    Objects::uvCoords tex_cords;
+    TileProc::uvCoords tex_cords;
+    std::vector<tmx::Rectangle<float>> AABB;
 };
+uvCoords get_uv_coords(const TileSize &size);
+} // namespace TileProc
 
 class ResourceManager
 {
     using shaderProgMap = std::map<std::string, std::shared_ptr<Render::ProgramShader>>;
     using textureMap = std::map<std::string, std::shared_ptr<Render::Texture2D>>;
-    using TileInfo = std::map<unsigned int, Objects::TileSize>;
+    using TileInfo = std::map<unsigned int, std::pair<TileProc::TileSize, std::vector<tmx::Rectangle<float>>>>;
     using Tailsets = std::map<std::string, std::pair<TileInfo, std::shared_ptr<Render::Texture2D>>>;
-    using Levels = std::map<std::string, std::pair<std::vector<TilesCord>, std::shared_ptr<Render::Texture2D>>>;
+    using Levels =
+        std::map<std::string, std::pair<std::vector<TileProc::TilesCord>, std::shared_ptr<Render::Texture2D>>>;
 
     shaderProgMap sh_map;
     textureMap t_map;
@@ -55,9 +57,11 @@ class ResourceManager
     static ResourceManager *instance;
     ResourceManager(const std::string &pathExeFile);
     std::string getFileStr(const std::string filePath) const;
+    std::vector<tmx::Rectangle<float>> getAABB(std::vector<tmx::Object> &objs);
 
   public:
     static ResourceManager *getInstance(const std::string &pathExFile);
+    ResourceManager() = delete;
     ~ResourceManager();
     ResourceManager(const ResourceManager &) = delete;
     ResourceManager &operator=(const ResourceManager &) = delete;
@@ -72,6 +76,6 @@ class ResourceManager
 
     std::pair<TileInfo, std::shared_ptr<Render::Texture2D>> loadTileset(tmx::Map &map, const std::string &name);
 
-    std::pair<std::vector<TilesCord>, std::shared_ptr<Render::Texture2D>> tileMapProcessing(const std::string &tmxPath,
-                                                                                            const std::string &nameLvl);
+    std::pair<std::vector<TileProc::TilesCord>, std::shared_ptr<Render::Texture2D>> tileMapProcessing(
+        const std::string &tmxPath, const std::string &nameLvl);
 };

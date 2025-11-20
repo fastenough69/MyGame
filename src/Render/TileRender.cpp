@@ -14,7 +14,7 @@ void Render::TileRender::swap(TileRender &copy) noexcept
 }
 
 Render::TileRender::TileRender(std::shared_ptr<Camera::Camera2D> cm, std::shared_ptr<Render::ProgramShader> prog,
-                               std::shared_ptr<Render::Texture2D> tx, std::vector<TilesCord> arr)
+                               std::shared_ptr<Render::Texture2D> tx, std::vector<TileProc::TilesCord> arr)
     : cam{cm}, sh_prog{prog}, tex{tx}, crds{arr}
 {
     unsigned int size = crds.size();

@@ -20,7 +20,7 @@ class TileRender
     std::shared_ptr<Camera::Camera2D> cam = nullptr;
     std::shared_ptr<Render::ProgramShader> sh_prog = nullptr;
     std::shared_ptr<Render::Texture2D> tex = nullptr;
-    std::vector<TilesCord> crds;
+    std::vector<TileProc::TilesCord> crds;
     static std::vector<unsigned int> ids;
     std::vector<std::vector<float>> verticies;
     std::vector<VertexBuffArr> vbos;
@@ -30,7 +30,7 @@ class TileRender
 
   public:
     TileRender(std::shared_ptr<Camera::Camera2D> cm, std::shared_ptr<Render::ProgramShader> prog,
-               std::shared_ptr<Render::Texture2D> tx, std::vector<TilesCord> arr);
+               std::shared_ptr<Render::Texture2D> tx, std::vector<TileProc::TilesCord> arr);
     TileRender() = default;
     ~TileRender() = default;
     TileRender(const TileRender &) = delete;

@@ -26,6 +26,8 @@ add_executable(${PROJECT_NAME}
 	src/Background/Background.h
 	src/Render/TileRender.cpp
 	src/Render/TileRender.h
+	src/Sprite/Person.cpp
+	src/Sprite/Person.h
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
@@ -37,8 +39,6 @@ add_subdirectory(external/glad)
 target_link_libraries(${PROJECT_NAME} glad)
 
 include_directories(external/glm)
-
-include_directories(external/rapidjson/include)
 
 add_subdirectory(external/tmxlite)
 target_link_libraries(${PROJECT_NAME} tmxlite)

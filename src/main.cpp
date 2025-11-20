@@ -22,13 +22,13 @@
 static float window_SizeX = 720;
 static float window_SizeY = 480;
 
-glm::vec3 getWorldPosCursor(glm::vec3 mousePos, std::shared_ptr<Camera::Camera2D> cam)
+static glm::vec3 getWorldPosCursor(glm::vec3 mousePos, std::shared_ptr<Camera::Camera2D> cam)
 {
     glm::vec4 viewPort{0, 0, window_SizeX, window_SizeY};
     return glm::unProject(mousePos, cam->get_view_matrix(), cam->get_proj_matrix(), viewPort);
 }
 
-int rand_(int min, int max)
+static int rand_(int min, int max)
 {
     std::random_device rd;  // non-deterministic generator
     std::mt19937 gen(rd()); // to seed mersenne twister.
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 
     /* Create a windowed mode window and its OpenGL context */
 
-    /*auto mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+   /* auto mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
     window_SizeX = mode->width;
     window_SizeY = mode->height;*/
 
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
         ResourceManager *mn = ResourceManager::getInstance(argv[0]);
         auto shProgramBg =
             mn->loadShaderPr("ShaderBg", "res/shaders/BgShaders/vShader.txt", "res/shaders/BgShaders/fShader.txt");
-        auto tiles = mn->tileMapProcessing("res\\resource\\levels\\1.tmx", "Level1");
+        auto tiles = mn->tileMapProcessing("res/resource/levels/1.tmx", "Level1");
 
         if (!shProgramBg)
         {
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
         auto bg_tex2 = mn->loadTexture("Bg_tex1", "res/textures/background_layer_2.png");
         auto bg_tex3 = mn->loadTexture("Bg_tex2", "res/textures/background_layer_3.png");
 
-        float worldX = 60.0f, worldY = 20.0f;
+        float worldX = 30.0f, worldY = 20.0f;
         float cameraX = 30;
         float bgRepeatCount = 8.0f;
         std::vector<float> vecbg{0.0f,
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 
             if (glfwGetKey(pt_window, GLFW_KEY_W) == GLFW_PRESS)
             {
-                pos.y += 550 * deltaTime;
+                pos.y += 10.0f * deltaTime;
             }
 
             camera->folow_target(pos, worldX, worldY);

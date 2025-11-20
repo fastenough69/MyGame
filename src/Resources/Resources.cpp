@@ -14,6 +14,7 @@ ResourceManager::ResourceManager(const std::string &pathExeFile)
 {
     size_t fn = pathExeFile.find_last_of("/\\");
     e_path = pathExeFile.substr(0, fn);
+    std::replace(e_path.begin(), e_path.end(), '\\', '/');
 }
 
 std::string ResourceManager::getFileStr(const std::string filePath) const
@@ -30,6 +31,16 @@ std::string ResourceManager::getFileStr(const std::string filePath) const
     buff << f.rdbuf();
     f.close();
     return buff.str();
+}
+
+std::vector<tmx::Rectangle<float>> ResourceManager::getAABB(std::vector<tmx::Object> &objs)
+{
+    std::vector<tmx::Rectangle<float>> res;
+    for (int i{}; i < objs.size(); i++)
+    {
+        res.push_back(objs[i].getAABB());
+    }
+    return res;
 }
 
 ResourceManager *ResourceManager::getInstance(const std::string &pathExFile)
@@ -125,9 +136,13 @@ std::pair<ResourceManager::TileInfo, std::shared_ptr<Render::Texture2D>> Resourc
     {
         for (int x{}; x < (sizeTex.x / sizeTile); x++)
         {
-            temp.emplace(tiles[y * (sizeTex.x / sizeTile) + x].ID + tileset.getFirstGID(),
-                         Objects::TileSize{(float)(x * sizeTile), (sizeTex.y - sizeTile) - (float)(y * sizeTile),
-                                           (float)sizeTile, (float)sizeTile, (float)(sizeTex.x), (float)(sizeTex.y)});
+            std::vector<tmx::Object> objs = tiles[y * (sizeTex.x / sizeTile) + x].objectGroup.getObjects();
+            temp.emplace(
+                tiles[y * (sizeTex.x / sizeTile) + x].ID + tileset.getFirstGID(),
+                std::pair<TileProc::TileSize, std::vector<tmx::Rectangle<float>>>{
+                    TileProc::TileSize{(float)(x * sizeTile), (sizeTex.y - sizeTile) - (float)(y * sizeTile),
+                                       (float)sizeTile, (float)sizeTile, (float)(sizeTex.x), (float)(sizeTex.y)},
+                    getAABB(objs)});
         }
     }
 
@@ -144,7 +159,7 @@ std::pair<ResourceManager::TileInfo, std::shared_ptr<Render::Texture2D>> Resourc
     return pair;
 }
 
-std::pair<std::vector<TilesCord>, std::shared_ptr<Render::Texture2D>> ResourceManager::tileMapProcessing(
+std::pair<std::vector<TileProc::TilesCord>, std::shared_ptr<Render::Texture2D>> ResourceManager::tileMapProcessing(
     const std::string &tmxPath, const std::string &nameLvl)
 {
     tmx::Map map;
@@ -158,11 +173,10 @@ std::pair<std::vector<TilesCord>, std::shared_ptr<Render::Texture2D>> ResourceMa
     }
     const auto &layers = map.getLayers();
     tmx::Vector2u sizeMap = map.getTileCount();
-    std::cout << "Map size: " << sizeMap.x << ' ' << sizeMap.y << std::endl;
     const auto &tailset = loadTileset(map, "ts1");
     auto tex = tailset.second;
     auto info = tailset.first;
-    std::vector<TilesCord> temp;
+    std::vector<TileProc::TilesCord> temp;
 
     for (const auto &layer : layers)
     {
@@ -174,23 +188,24 @@ std::pair<std::vector<TilesCord>, std::shared_ptr<Render::Texture2D>> ResourceMa
                 auto tileId = tiles[y * sizeMap.x + x].ID;
                 if (tileId != 0)
                 {
-                    Objects::uvCoords uvcrd = Objects::get_uv_coords(info[tileId]);
-                    temp.push_back(TilesCord{tmx::Vector2f((float)(x), (float)(sizeMap.y - y - 1)), uvcrd});
+                    TileProc::uvCoords uvcrd = TileProc::get_uv_coords(info[tileId].first);
+                    temp.push_back(TileProc::TilesCord{tmx::Vector2f((float)(x), (float)(sizeMap.y - y - 1)), uvcrd,
+                                                       info[tileId].second});
 
-                   /* std::cout << uvcrd.min_u << ' ' << uvcrd.max_u << std::endl
-                              << uvcrd.min_v << ' ' << uvcrd.max_v << std::endl;
-                    std::cout << "Map coords: " << x << ' ' << sizeMap.y - y - 1;
-                    std::cout << std::endl;*/
+                    /* std::cout << uvcrd.min_u << ' ' << uvcrd.max_u << std::endl
+                               << uvcrd.min_v << ' ' << uvcrd.max_v << std::endl;
+                     std::cout << "Map coords: " << x << ' ' << sizeMap.y - y - 1;
+                     std::cout << std::endl;*/
                 }
             }
         }
     }
-    std::pair<std::vector<TilesCord>, std::shared_ptr<Render::Texture2D>> result = {temp, tex};
+    std::pair<std::vector<TileProc::TilesCord>, std::shared_ptr<Render::Texture2D>> result = {temp, tex};
     level_map.emplace(nameLvl, result);
     return result;
 }
 
-Objects::uvCoords Objects::get_uv_coords(const TileSize &size)
+TileProc::uvCoords TileProc::get_uv_coords(const TileSize &size)
 {
     uvCoords result{};
     result.min_u = size.x / size.fullWidht;
